@@ -1,0 +1,18 @@
+.header {
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #fff;
+    box-shadow:
+        0 calc(0.0625rem * var(--mantine-scale)) calc(0.1875rem * var(--mantine-scale)) rgba(0, 0, 0, 0.05),
+        rgba(0, 0, 0, 0.05) 0 calc(0.625rem * var(--mantine-scale)) calc(0.9375rem * var(--mantine-scale))
+            calc(-0.3125rem * var(--mantine-scale)),
+        rgba(0, 0, 0, 0.04) 0 calc(0.4375rem * var(--mantine-scale)) calc(0.4375rem * var(--mantine-scale))
+            calc(-0.3125rem * var(--mantine-scale));
+}
+
+.chevron {
+    color: var(--mantine-color-green-6);
+    transition: all 0.3s ease;
+}

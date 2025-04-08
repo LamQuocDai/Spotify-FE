@@ -1,6 +1,6 @@
 const Header = () => {
     return (
-        <div className="flex h-[10vh] flex-row w-full items-center bg-black">
+        <div className="flex h-[10vh] flex-row w-screen items-center text-white bg-black">
             <div className="flex flex-1 flex-row w-full items-center">
                 <img className="h-14" src="https://getheavy.com/wp-content/uploads/2019/12/spotify2019-830x350.jpg" />
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mx-2 bg-[#272727] cursor-pointer size-11 border-none bg p-2 rounded-full">

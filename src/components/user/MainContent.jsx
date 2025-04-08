@@ -1,6 +1,6 @@
 const Song = (name, singer, lyric) => {
     return (
-        <div className="group hover:bg-gradient-to-b from-[#131313] to-[#272727] cursor-pointer p-3 rounded-md">
+        <div className="group hover:bg-gradient-to-b from-[#131313] to-[#272727] text-white cursor-pointer p-3 rounded-md">
             <div className="relative">
                 <img
                     className="h-40 w-40 rounded-lg object-cover object-center"
@@ -13,8 +13,8 @@ const Song = (name, singer, lyric) => {
                     </svg>
                 </div>
             </div>
-            <h3 className="text-xl font-medium">Người yêu cũ anh peter</h3>
             <div>
+            <h3 className="text-xl font-medium">Người yêu cũ anh peter</h3>
                 <span className="text-gray-400">Pháo</span>
             </div>
         </div>
@@ -22,7 +22,7 @@ const Song = (name, singer, lyric) => {
 };
 const Articsle = () => {
     return (
-        <div className="group hover:bg-gradient-to-b from-[#131313] to-[#272727] cursor-pointer p-3 rounded-md">
+        <div className="group text-white hover:bg-gradient-to-b from-[#131313] to-[#272727] cursor-pointer p-3 rounded-md">
             <div className="relative">
                 <img
                     className="h-40 w-40 rounded-full object-cover object-center"
@@ -45,7 +45,7 @@ const Articsle = () => {
 
 const MainContent = () => {
     return (
-        <div className="bg-[#131313] h-[90vh] p-4 mr-2 rounded-lg flex-1 overflow-y-auto space-y-4">
+        <div className="bg-[#131313] text-white h-[78vh] p-4 mr-2 rounded-lg flex-1 overflow-y-auto space-y-4">
             {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="">
                     <div className="flex flex-row justify-between">

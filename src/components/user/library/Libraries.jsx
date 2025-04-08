@@ -1,23 +1,49 @@
+import { useState } from "react";
+
 const Library = () => {
     return (
-        <div className="flex w-[420px] flex-col bg-[#131313] px-2 mx-2 rounded-lg">
+        <div className="flex items-center cursor-pointer bg-gradient-to-br from-[#450af5] to-[#8e8ee5] h-16 w-full rounded-lg px-4">
+            <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center bg-[#450af5] p-2 rounded">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                        <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 className="text-sm font-bold">Bài hát đã thích</h3>
+                    <p className="text-xs text-gray-300">30 bài hát</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+const Libraries = ({ setCurrentView }) => {
+    const [libraryAvailable, setLibraryAvailable] = useState(false);
+    return (
+        <div className="flex w-[420px] flex-col bg-[#131313] h-[78vh] px-2 mx-2 text-white rounded-lg">
             <div className="flex flex-row justify-between items-center pt-4 pb-12 px-2">
                 <span className="text-md font-bold">Thư viện</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-6">
+                <svg onClick={() => setCurrentView("MyLibrary")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-6 cursor-pointer">
                     <path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
                 </svg>
             </div>
             <div className="h-[calc(100vh-410px)] overflow-y-auto space-y-4 pr-1 hover:scrollbar-thin hover:scrollbar-thumb-gray-600 hover:scrollbar-track-transparent scrollbar-none">
-                <div className="bg-[#272727] h-36 w-full p-5 rounded-lg">
-                    <h3 className="font-bold">Tạo danh sách phát đầu tiên của bạn</h3>
-                    <h3 className="text-sm font-semibold">Rất dễ! chúng tôi sẽ giúp bạn</h3>
-                    <button className="mt-4 text-sm font-bold bg-white text-black rounded-full py-1.5 px-4">Tạo danh sách phát</button>
-                </div>
-                <div className="bg-[#272727] h-36 w-full p-5 rounded-lg">
-                    <h3 className="font-bold">Hãy cùng tìm và theo dõi một số podcast</h3>
-                    <h3 className="text-sm font-semibold">Chúng tôi sẽ cập nhật cho bạn thông tin về các tập mới</h3>
-                    <button className="mt-4 text-sm font-bold bg-white text-black rounded-full py-1.5 px-4">Duyệt xem podcast</button>
-                </div>
+                {libraryAvailable ? (
+                    <>
+                        <div className="bg-[#272727] h-36 w-full p-5 rounded-lg">
+                            <h3 className="font-bold">Tạo danh sách phát đầu tiên của bạn</h3>
+                            <h3 className="text-sm font-semibold">Rất dễ! chúng tôi sẽ giúp bạn</h3>
+                            <button className="mt-4 text-sm font-bold bg-white text-black rounded-full py-1.5 px-4">Tạo danh sách phát</button>
+                        </div>
+                        <div className="bg-[#272727] h-36 w-full p-5 rounded-lg">
+                            <h3 className="font-bold">Hãy cùng tìm và theo dõi một số podcast</h3>
+                            <h3 className="text-sm font-semibold">Chúng tôi sẽ cập nhật cho bạn thông tin về các tập mới</h3>
+                            <button className="mt-4 text-sm font-bold bg-white text-black rounded-full py-1.5 px-4">Duyệt xem podcast</button>
+                        </div>
+                    </>
+                ) : (
+                    Array.from({ length: 10 }).map((_, index) => <Library key={index} />)
+                )}
             </div>
             <div className="flex flex-col p-4">
                 <div className="flex flex-wrap">
@@ -44,4 +70,4 @@ const Library = () => {
         </div>
     );
 };
-export default Library;
+export default Libraries;

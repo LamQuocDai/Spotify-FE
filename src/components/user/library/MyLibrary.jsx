@@ -17,7 +17,7 @@ const Song = () => {
     );
 };
 
-const MyLibrary = () => {
+const MyLibrary = ({playlist}) => {
     const [available, setAvailable] = useState(false);
     return (
         <div className="bg-[#131313] text-white h-[78vh] flex-1 mr-2 rounded-lg overflow-y-auto">
@@ -36,7 +36,7 @@ const MyLibrary = () => {
                     <div className="flex flex-col gap-6">
                         <div>
                             <p className="text-sm">Playlist</p>
-                            <h1 className="text-5xl font-bold mt-2">Danh sách phát của tôi #2</h1>
+                            <h1 className="text-5xl font-bold mt-2">{playlist.title}</h1>
                         </div>
                         <div className="flex items-center gap-2">
                             <img src="/path-to-avatar" alt="User Avatar" className="w-6 h-6 rounded-full" />

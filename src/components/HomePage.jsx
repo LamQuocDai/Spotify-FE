@@ -4,6 +4,7 @@ import Libraries from "./user/library/Libraries.jsx";
 import MainContent from "./user/MainContent.jsx";
 import PlayerControls from "./user/PlayerControls.jsx";
 import MyLibrary from "./user/library/MyLibrary.jsx";
+
 const HomePage = () => {
     const [currentView, setCurrentView] = useState("main");
     return (
@@ -11,7 +12,7 @@ const HomePage = () => {
             <Header />
             <div className="flex flex-1 flex-row">
                 <Libraries setCurrentView={setCurrentView}/>
-                {currentView === "main" ? <MainContent /> : <MyLibrary />}
+                {currentView === "main" ? <MainContent /> : <MyLibrary playlist={currentView}/>}
             </div>
             <PlayerControls />
         </div>

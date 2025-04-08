@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { createPlaylistService, getUserPlaylistService } from "../../../services/playlistService";
 
 const Library = ({setCurrentView, playlist}) => {
+
+
     return (
         <div className="flex items-center cursor-pointer bg-gradient-to-br from-[#450af5] to-[#8e8ee5] h-16 w-full rounded-lg px-4">
             <div className="flex items-center gap-4">
@@ -12,7 +14,7 @@ const Library = ({setCurrentView, playlist}) => {
                 </div>
                 <div>
                     <h3 className="text-sm font-bold cursor-pointer" onClick={() => setCurrentView(playlist)}>{playlist.title}</h3>
-                    <p className="text-xs text-gray-300">30 bài hát</p>
+                    <p className="text-xs text-gray-300">{playlist.song_count} bài hát</p>
                 </div>
             </div>
         </div>

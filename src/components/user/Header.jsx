@@ -1,28 +1,15 @@
+import { IconHome, IconSearch, IconArticle  } from '@tabler/icons-react';
 const Header = () => {
     return (
         <div className="flex h-[10vh] flex-row w-screen items-center text-white bg-black">
             <div className="flex flex-1 flex-row w-full items-center">
                 <img className="h-14" src="https://getheavy.com/wp-content/uploads/2019/12/spotify2019-830x350.jpg" />
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="mx-2 bg-[#272727] cursor-pointer size-11 border-none bg p-2 rounded-full">
-                    <path
-                        fill-rule="evenodd"
-                        d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z"
-                        clip-rule="evenodd"
-                    />
-                </svg>
+                <IconHome stroke={2} className="mx-2 bg-[#272727] cursor-pointer size-11 border-none bg p-2 rounded-full"/>
 
                 <div className="flex flex-1 flex-row bg-[#272727] px-4 py-2 items-center rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-7 ">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                    </svg>
+                    <IconSearch stroke={2} className="size-7 "/>
                     <input type="text" className="flex-1 mx-2 bg-[#272727]  border-r border-white" />
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 cursor-pointer">
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="m7.875 14.25 1.214 1.942a2.25 2.25 0 0 0 1.908 1.058h2.006c.776 0 1.497-.4 1.908-1.058l1.214-1.942M2.41 9h4.636a2.25 2.25 0 0 1 1.872 1.002l.164.246a2.25 2.25 0 0 0 1.872 1.002h2.092a2.25 2.25 0 0 0 1.872-1.002l.164-.246A2.25 2.25 0 0 1 16.954 9h4.636M2.41 9a2.25 2.25 0 0 0-.16.832V12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 12V9.832c0-.287-.055-.57-.16-.832M2.41 9a2.25 2.25 0 0 1 .382-.632l3.285-3.832a2.25 2.25 0 0 1 1.708-.786h8.43c.657 0 1.281.287 1.709.786l3.284 3.832c.163.19.291.404.382.632M4.5 20.25h15A2.25 2.25 0 0 0 21.75 18v-2.625c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125V18a2.25 2.25 0 0 0 2.25 2.25Z"
-                        />
-                    </svg>
+                    <IconArticle stroke={2} className="size-6 cursor-pointer"/>
                 </div>
             </div>
             <div className="flex flex-row flex-1 items-center justify-end">

@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "^7.17.3",
+    "@mantine/core": "^7.17.4",
     "@mantine/dropzone": "^7.17.4",
-    "@mantine/hooks": "^7.17.3",
+    "@mantine/hooks": "^7.17.4",
     "@mantine/modals": "^7.17.4",
     "@tabler/icons-react": "^3.31.0",
     "axios": "^1.8.4",

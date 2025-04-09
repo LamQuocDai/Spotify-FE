@@ -1,3 +1,4 @@
+import { IconPlayerPlayFilled } from '@tabler/icons-react';
 const Song = (name, singer, lyric) => {
     return (
         <div className="group hover:bg-gradient-to-b from-[#131313] to-[#272727] text-white cursor-pointer p-3 rounded-md">
@@ -8,9 +9,7 @@ const Song = (name, singer, lyric) => {
                     alt=""
                 />
                 <div className="absolute bottom-2 right-2 bg-green-500 rounded-full hidden group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-12 p-3 text-black">
-                        <path d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z" />
-                    </svg>
+                    <IconPlayerPlayFilled className="size-12 p-3 text-black"/>
                 </div>
             </div>
             <div>
@@ -29,11 +28,6 @@ const Articsle = () => {
                     src="https://kenh14cdn.com/203336854389633024/2025/3/23/phao-sunghiepchuongonline-video-cuttercom5-ezgifcom-video-to-gif-converter-1742743391566-17427433926181286024766.gif"
                     alt=""
                 />
-                <div className="absolute bottom-2 right-2 bg-green-500 rounded-full hidden group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-12 p-3 text-black">
-                        <path d="M6.3 2.84A1.5 1.5 0 0 0 4 4.11v11.78a1.5 1.5 0 0 0 2.3 1.27l9.344-5.891a1.5 1.5 0 0 0 0-2.538L6.3 2.841Z" />
-                    </svg>
-                </div>
             </div>
             <h3 className="text-xl font-medium">Người yêu cũ anh peter</h3>
             <div>

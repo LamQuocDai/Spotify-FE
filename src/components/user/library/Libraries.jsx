@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPlaylistService, getUserPlaylistService } from "../../../services/playlistService";
-import { IconPlus, IconWorld } from "@tabler/icons-react";
+import { IconPlus, IconWorld, IconArrowRight, IconArrowLeft, IconSearch } from "@tabler/icons-react";
 
 const Library = ({ setCurrentView, playlist }) => {
     return (
@@ -24,7 +24,8 @@ const Library = ({ setCurrentView, playlist }) => {
 const Libraries = ({ setCurrentView }) => {
     const [loading, setLoading] = useState(false);
     const [playlists, setPlaylists] = useState([]);
-    const [count, setCount] = useState(1);
+    const [count, setCount] = useState(0);
+    const [widthContainer, setWidthContainer] = useState(false);
 
     useEffect(() => {
         const fetchPlaylists = async () => {
@@ -77,10 +78,32 @@ const Libraries = ({ setCurrentView }) => {
     };
 
     return (
-        <div className="flex w-[420px] flex-col bg-[#131313] h-[78vh] px-2 mx-2 text-white rounded-lg">
-            <div className="flex flex-row justify-between items-center pt-4 pb-12 px-2">
+        <div className={`flex ${widthContainer ? 'w-[820px]' : 'w-[420px]'} flex-col bg-[#131313] h-[78vh] px-2 mx-2 text-white rounded-lg`}>
+            <div className="flex flex-row justify-between items-center pt-4 pb-8 px-2">
                 <span className="text-md font-bold">Thư viện</span>
-                <IconPlus stroke={2} className="size-6 cursor-pointer" onClick={() => handleCreatePlaylist()} />
+                <div className="flex items-center">
+                    <button className="bg-[#272727] flex items-center justify-center h-[36px] px-4 rounded-3xl cursor-pointer hover:bg-[#242424]" onClick={() => handleCreatePlaylist()}>
+                        <IconPlus stroke={2} className="size-5 mr-1" />
+                        <h3 className="text-md font-bold text-gray-300">Tạo</h3>
+                    </button>
+                    <button className="flex ml-1 cursor-pointer w-[36px] h-[36px] justify-center items-center rounded-full  text-gray-400 hover:bg-[#242424]">
+                        {!widthContainer ? (
+                            <IconArrowRight stroke={2} className="size-7" onClick={() => setWidthContainer(!widthContainer)} />
+                        ) : (
+                            <IconArrowLeft stroke={2} className="size-7" onClick={() => setWidthContainer(!widthContainer)} />
+                        )}
+                    </button>
+                </div>
+            </div>
+            <div>
+                {widthContainer ? (
+                    <div className="flex flex-1 flex-row bg-[#272727] mb-3 px-4 py-2 items-center rounded-full">
+                        <IconSearch stroke={2} className="size-7 " />
+                        <input type="text" className="flex-1 mx-2 bg-[#272727]  border-r border-white" />
+                    </div>
+                ) : (
+                    <IconSearch stroke={2} className="size-7 mt-2 mb-5 cursor-pointer" onClick={() => setWidthContainer(!widthContainer)}/>
+                )}
             </div>
             <div className="h-[calc(100vh-410px)] overflow-y-auto space-y-4 pr-1 hover:scrollbar-thin hover:scrollbar-thumb-gray-600 hover:scrollbar-track-transparent scrollbar-none">
                 {playlists.length == 0 ? (

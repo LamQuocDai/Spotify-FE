@@ -1,10 +1,10 @@
 import { IconPlayerPlayFilled } from '@tabler/icons-react';
 const Song = (name, singer, lyric) => {
     return (
-        <div className="group hover:bg-gradient-to-b from-[#131313] to-[#272727] text-white cursor-pointer p-3 rounded-md">
+        <div className="group flex-shrink-0 hover:bg-gradient-to-b from-[#131313] to-[#272727] text-white cursor-pointer w-[160px] p-3 rounded-md">
             <div className="relative">
                 <img
-                    className="h-40 w-40 rounded-lg object-cover object-center"
+                    className="h-[180px] w-[180px] rounded-lg object-cover object-center"
                     src="https://kenh14cdn.com/203336854389633024/2025/3/23/phao-sunghiepchuongonline-video-cuttercom5-ezgifcom-video-to-gif-converter-1742743391566-17427433926181286024766.gif"
                     alt=""
                 />
@@ -12,26 +12,26 @@ const Song = (name, singer, lyric) => {
                     <IconPlayerPlayFilled className="size-12 p-3 text-black"/>
                 </div>
             </div>
-            <div>
-            <h3 className="text-xl font-medium">Người yêu cũ anh peter</h3>
-                <span className="text-gray-400">Pháo</span>
+            <div className="mt-2 w-full">
+                <h3 className="text-base font-medium truncate">Người yêu cũ anh peter</h3>
+                <span className="text-sm text-gray-400">Pháo</span>
             </div>
         </div>
     );
 };
 const Articsle = () => {
     return (
-        <div className="group text-white hover:bg-gradient-to-b from-[#131313] to-[#272727] cursor-pointer p-3 rounded-md">
+        <div className="group flex-shrink-0 text-white hover:bg-gradient-to-b from-[#131313] to-[#272727] cursor-pointer w-[180px] p-3 rounded-md">
             <div className="relative">
                 <img
-                    className="h-40 w-40 rounded-full object-cover object-center"
+                    className="h-[160px] w-[180px] rounded-full object-cover object-center"
                     src="https://kenh14cdn.com/203336854389633024/2025/3/23/phao-sunghiepchuongonline-video-cuttercom5-ezgifcom-video-to-gif-converter-1742743391566-17427433926181286024766.gif"
                     alt=""
                 />
             </div>
-            <h3 className="text-xl font-medium">Người yêu cũ anh peter</h3>
-            <div>
-                <span className="text-gray-400">Pháo</span>
+            <div className="mt-2 w-full">
+                <h3 className="text-base font-medium truncate">Người yêu cũ anh peter</h3>
+                <span className="text-sm text-gray-400">Pháo</span>
             </div>
         </div>
     );
@@ -48,14 +48,14 @@ const MainContent = () => {
                     </div>
                     {
                         index === 1 ? (
-                            <div className="flex flex-row justify-between">
+                            <div className="flex flex-row gap-4 overflow-x-auto pb-4  scrollbar-none">
                                 {Array.from({ length: 6 }).map((_, index) => (
                                     <Articsle key={index} />
                                 ))}
                             </div>
                             ) : (
-                            <div className="flex flex-row justify-between">
-                                {Array.from({ length: 6 }).map((_, index) => (
+                            <div className="flex flex-row gap-4 overflow-x-auto pb-4 scrollbar-none">
+                                {Array.from({ length: 20 }).map((_, index) => (
                                     <Song key={index} />
                                 ))}
                             </div>

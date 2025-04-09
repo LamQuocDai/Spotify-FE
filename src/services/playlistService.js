@@ -24,3 +24,8 @@ export const getUserPlaylistService = async () => {
   const res = await axiosCustom.get("/playlists/");
   return res;
 };
+
+export const searchPlaylistsService = async (query) => {
+  const res = await axiosCustom.get(`/playlists/search/?query=${query}`);
+  return res;
+};

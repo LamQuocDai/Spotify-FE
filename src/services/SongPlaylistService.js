@@ -33,3 +33,27 @@ export const goToArtistService = async (userId) => {
     const res = await axiosCustom.get(`/song_playlist/${userId}/delete/`);
     return res;
 };
+
+// LikedSong-related services
+export const addToLikedSongsService = async (songId) => {
+    const formData = {
+        song_id: songId,
+    };
+    const res = await axiosCustom.post("/song_playlist/liked_songs/add/", formData);
+    return res;
+};
+
+export const getLikedSongsService = async () => {
+    const res = await axiosCustom.get("/song_playlist/liked_songs/");
+    return res;
+};
+
+export const searchLikedSongsService = async (query) => {
+    const res = await axiosCustom.get(`/song_playlist/liked_songs/search/?query=${query}`);
+    return res;
+};
+
+export const removeFromLikedSongsService = async (songId) => {
+    const res = await axiosCustom.delete(`/song_playlist/liked_songs/${songId}/remove/`);
+    return res;
+};

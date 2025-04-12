@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { getSongFromPlaylistService } from "../../../services/SongPlaylistService";
+import { getSongsFromPlaylistService } from "../../../services/SongPlaylistService";
+import {searchPlaylistsService} from "../../../services/playlistService";
 import { IconChevronRight, IconMusic, IconPlayerPlayFilled, IconList, IconDotsVertical, IconClockHour3 } from "@tabler/icons-react";
 
 const Song = ({ song, index }) => {
@@ -48,6 +49,8 @@ const MyLibrary = ({ playlist }) => {
     const [available, setAvailable] = useState(false);
     const [songs, setSongs] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+    const [searchValue, setSearchValue] = useState("");
 
     useEffect(() => {
         const fetchSongs = async () => {
@@ -55,7 +58,7 @@ const MyLibrary = ({ playlist }) => {
 
             setLoading(true);
             try {
-                const response = await getSongFromPlaylistService(playlist.id);
+                const response = await getSongsFromPlaylistService(playlist.id);
                 console.log(response);
 
                 setSongs(response.data.songs);
@@ -71,6 +74,21 @@ const MyLibrary = ({ playlist }) => {
 
         fetchSongs();
     }, [playlist]);
+
+    useEffect(() => {
+        const fetchSearchResults = async () => {
+            try {
+                // const response = await searchPlaylistsService(searchValue);
+                // console.log(response);
+            } catch (error) {
+                console.error("Error fetching songs:", error);
+            }
+        }
+        if(searchValue) {
+            fetchSearchResults();
+        }
+        
+    }, [searchValue]);
 
     return (
         <div className="bg-[#131313] text-white h-[78vh] flex-1 mr-2 rounded-lg overflow-y-auto">
@@ -129,7 +147,12 @@ const MyLibrary = ({ playlist }) => {
                     <h3 className="text-2xl font-bold">Hãy cùng tìm nội dung cho danh sách phát của bạn</h3>
                     <div className="flex flex-row justify-between items-center">
                         <div className="w-full max-w-[364px] relative mt-4">
-                            <input type="text" placeholder="Tìm bài hát và tập podcast" className="w-full bg-[#242424] px-10 py-2 rounded-full text-sm placeholder:text-gray-400" />
+                            <input
+                                onChange={(e) => setSearchValue(e.target.value)}
+                                type="text"
+                                placeholder="Tìm bài hát và tập podcast"
+                                className="w-full bg-[#242424] px-10 py-2 rounded-full text-sm placeholder:text-gray-400"
+                            />
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
@@ -151,10 +174,7 @@ const MyLibrary = ({ playlist }) => {
                     </div>
                 </div>
                 {/* Nơi hiện các bài hát để thêm vào play list */}
-                <div className="pb-6 mx-4">
-                    <SearchedArtist />
-                    <SearchedSong />
-                </div>
+                <div className="pb-6 mx-4">{searchResults.length > 0 && searchResults.map((song) => <SearchedSong key={song.id} songs={song} />)}</div>
             </div>
         </div>
     );

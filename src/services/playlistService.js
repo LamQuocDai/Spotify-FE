@@ -21,7 +21,7 @@ export const getPlaylistByIdService = async (id) => {
 };
 
 export const getUserPlaylistService = async () => {
-  const res = await axiosCustom.get("/playlists/");
+  const res = await axiosCustom.get("/");
   return res;
 };
 

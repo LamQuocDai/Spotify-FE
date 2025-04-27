@@ -101,7 +101,7 @@ const Libraries = ({ setCurrentView }) => {
     };
 
     return (
-        <div className={`flex ${widthContainer ? "w-[820px]" : "w-[420px]"} flex-col bg-[#131313] h-[78vh] px-2 mx-2 text-white rounded-lg`}>
+        <div className={`flex ${widthContainer ? "w-[820px]" : "w-[420px]"} flex-col bg-[#131313] px-2 mx-2 text-white rounded-lg`}>
             <div className="flex flex-row justify-between items-center pt-4 pb-8 px-2">
                 <span className="text-md font-bold">Thư viện</span>
                 <div className="flex items-center">
@@ -146,7 +146,7 @@ const Libraries = ({ setCurrentView }) => {
                     playlists.map((playlist) => <Library key={playlist.id} playlist={playlist} setCurrentView={setCurrentView} />)
                 )}
             </div>
-            <div className="flex flex-col p-4">
+            <div className="flex flex-col px-4">
                 <div className="flex flex-wrap">
                     <span className="text-xs mb-2 mr-7 font-semibold cursor-pointer text-gray-400">Pháp lý</span>
                     <span className="text-xs mb-2 mr-7 font-semibold cursor-pointer text-gray-400">Trung tâm an toàn và quyền riêng tư</span>

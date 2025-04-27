@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getSongFromPlaylistService } from "../../../services/SongPlaylistService";
+import { getSongsFromPlaylistService } from "../../../services/SongPlaylistService";
 import { IconChevronRight, IconMusic, IconPlayerPlayFilled, IconList, IconDotsVertical, IconClockHour3 } from "@tabler/icons-react";
 
 const Song = ({ song, index }) => {
@@ -70,7 +70,7 @@ const MyLibrary = ({ playlist }) => {
 
             setLoading(true);
             try {
-                const response = await getSongFromPlaylistService(playlist.id);
+                const response = await getSongsFromPlaylistService(playlist.id);
                 console.log(response);
 
         setSongs(response.data.songs);
@@ -88,9 +88,8 @@ const MyLibrary = ({ playlist }) => {
     }, [playlist]);
 
   return (
-    <div className="bg-[#131313] text-white h-[78vh] flex-1 mr-2 rounded-lg overflow-y-auto">
+    <div className="bg-[#131313] text-white flex-1 mr-2 rounded-lg overflow-y-auto">
       <div className="flex flex-col">
-        {/* Header */}
         <div className="flex items-end gap-4 p-4 pb-6 bg-gradient-to-b from-[#666666] to-[#595959]">
           <div className="w-[232px] h-[232px] bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
             <IconMusic stroke={2} className="w-24 h-24 text-gray-400" />

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createPlaylistService, getUserPlaylistService, searchPlaylistsService } from "../../../services/playlistService";
+import { createPlaylistService, getUserPlaylistService, searchPlaylistsService,getPlaylistByIdService } from "../../../services/playlistService";
 import { IconPlus, IconWorld, IconArrowRight, IconArrowLeft, IconSearch } from "@tabler/icons-react";
 
 const Library = ({ setCurrentView, playlist }) => {
@@ -32,7 +32,7 @@ const Libraries = ({ setCurrentView }) => {
         const fetchPlaylists = async () => {
             setLoading(true);
             try {
-                const response = await getUserPlaylistService();
+                const response = await getPlaylistByIdService(1);
 
                 setPlaylists(response.data.playlists);
 

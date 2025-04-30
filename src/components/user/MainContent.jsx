@@ -1,11 +1,27 @@
 import React, { useEffect, useState } from "react";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
 import { getAllSongs } from "../../services/SongsService";
+import { useAudio } from "../../utils/audioContext";
 
-const Song = ({ song, setCurrentSong}) => {
+const Song = ({ song }) => {
+    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying } = useAudio();
+    
     const playAudio = () => {
         setCurrentSong(song);
     };
+
+    useEffect(() => {
+        if (currentSong && currentSong.id === song.id) {
+            if (audio) {
+                audio.pause();
+            }
+            const newAudio = new Audio(song.url_audio);
+            newAudio.volume = 0.5; 
+            newAudio.play();
+            setAudio(newAudio);
+            setIsPlaying(true);
+        }
+    }, [currentSong]);
 
     return (
         <div className="group flex-shrink-0 hover:bg-gradient-to-b from-[#131313] to-[#272727] text-white cursor-pointer w-[160px] p-3 rounded-md">
@@ -48,16 +64,14 @@ const Articsle = () => {
     );
 };
 
-const MainContent = ({setCurrentSong}) => {
+const MainContent = () => {
     const [trendingSongs, setTrendingSongs] = useState([]);
-    const [currentAudio, setCurrentAudio] = useState(null); // Trạng thái lưu audio hiện tại
 
     useEffect(() => {
         const fetchTrendingSongs = async () => {
             try {
                 const response = await getAllSongs();
-                setTrendingSongs(response.data);
-                console.log(response.data);
+                setTrendingSongs(response.data.results);
             } catch (error) {
                 console.error("Error fetching trending songs:", error);
             }
@@ -68,7 +82,7 @@ const MainContent = ({setCurrentSong}) => {
 
     return (
         <div className="bg-[#131313] text-white p-4 mr-2 rounded-lg flex-1 overflow-y-auto space-y-4">
-            <div className="">
+            <div>
                 <div className="flex flex-row justify-between">
                     <h2 className="text-2xl font-bold mb-6 cursor-pointer hover:underline">Trending Songs</h2>
                     <span className="text-sm font-bold text-gray-400 cursor-pointer hover:underline">Hiện tất cả</span>
@@ -78,7 +92,6 @@ const MainContent = ({setCurrentSong}) => {
                         <Song
                             key={index}
                             song={song}
-                            setCurrentSong={setCurrentSong}
                         />
                     ))}
                 </div>
@@ -86,4 +99,5 @@ const MainContent = ({setCurrentSong}) => {
         </div>
     );
 };
+
 export default MainContent;

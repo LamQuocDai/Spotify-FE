@@ -1,59 +1,45 @@
 import { use, useEffect, useState } from "react";
 import { IconCirclePlus, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerPlayFilled, IconPlayerPauseFilled, IconVolume, IconVolume3 } from "@tabler/icons-react";
+import { useAudio } from "../../utils/audioContext";
 
-const PlayerControls = ({ currentSong, setIsPlaying, isPlaying }) => {
-    const [isMute, setIsMute] = useState(false);
-    const [volume, setVolume] = useState(50);
-    const [audio, setAudio] = useState(null); // Lưu trữ đối tượng Audio
-
-
-    useEffect(() => {        
-        if (currentSong) {
-            // Nếu có bài hát mới, tạo đối tượng Audio và phát nhạc
-            if (audio) {
-                audio.pause(); // Dừng bài hát cũ nếu đang phát
-            }
-            const newAudio = new Audio(currentSong.url_audio);
-            newAudio.volume = volume / 100; // Cài đặt âm lượng
-            newAudio.play();
-            setAudio(newAudio); // Lưu đối tượng Audio mới
-            setIsPlaying(true); // Đặt trạng thái đang phát
-        }
-    }, [currentSong]);
-
-    useEffect(() => {        
-        if(currentSong){
-            if (isPlaying) {
-                audio.pause();
-            } else {
-                audio.play();
-            }
-        }
-    }, [isPlaying]);
+const PlayerControls = () => {
+    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume } = useAudio();
 
     const togglePlayPause = () => {
-        if (audio) {
-            if (isPlaying) {
-                audio.pause();
-            } else {
-                audio.play();
-            }
-            setIsPlaying(!isPlaying);
+        setIsPlaying(!isPlaying);
+        if (isPlaying) {
+            audio.pause(); // Tạm dừng bài hát nếu đang phát
+        } else {
+            audio.play(); // Phát bài hát nếu không đang phát
         }
     };
 
     const handleVolumeChange = (e) => {
         const newVolume = e.target.value;
         setVolume(newVolume);
-        if (audio) {
-            audio.volume = newVolume / 100;
-        }
     };
+
+    useEffect(() => {
+        const handleKeyPress = (e) => {
+            if (e.code === "Space" && currentSong) {
+                e.preventDefault();
+                togglePlayPause();
+                console.log(1); // Log chỉ xuất hiện 1 lần mỗi khi nhấn Space
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyPress);
+
+        // Dọn dẹp sự kiện khi component unmount
+        return () => {
+            window.removeEventListener("keydown", handleKeyPress);
+        };
+    }, [currentSong, togglePlayPause]);
 
     return (
         currentSong !== null && (
-            <div className="fixed bottom-0 left-0 right-0 bg-red-500 h-[12vh] border-t border-gray-800 px-4">
-                <div className="flex items-center justify-between h-full max-w-screen-2xl mx-auto">
+            <div className="border-t bg-black py-2 items-center border-gray-800 px-4">
+                <div className="flex items-center justify-between mx-auto">
                     {/* Currently Playing */}
                     <div className="flex items-center w-1/4">
                         <img src={currentSong.image} alt="Song cover" className="h-14 w-14 rounded-md mr-4" />
@@ -87,14 +73,7 @@ const PlayerControls = ({ currentSong, setIsPlaying, isPlaying }) => {
                         <div onClick={() => setIsMute(!isMute)}>
                             {isMute ? <IconVolume3 stroke={2} className="w-5 h-5 text-gray-400 cursor-pointer" /> : <IconVolume stroke={2} className="w-5 h-5 text-gray-400 cursor-pointer" />}
                         </div>
-                        <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={volume}
-                            onChange={handleVolumeChange}
-                            className="w-24"
-                        />
+                        <input type="range" min="0" max="100" value={volume} onChange={handleVolumeChange} className="w-24" />
                     </div>
                 </div>
             </div>

@@ -6,25 +6,26 @@ import PlayerControls from "./user/PlayerControls.jsx";
 import MyLibrary from "./user/library/MyLibrary.jsx";
 import ChatManager from "./chat/ChatManager.jsx";
 import SongDescription from "./user/SongDescription.jsx";
+import { useAudio } from "../utils/audioContext.jsx";
 
 const HomePage = () => {
   const [currentView, setCurrentView] = useState("main");
-  const [currentSong, setCurrentSong] = useState(null); 
-  const [isPlaying, setIsPlaying] = useState(false);
+
+  const {currentSong} = useAudio();
 
   return (
     <div className="flex flex-1 flex-col h-screen bg-black">
       <Header />
-      <div className="flex flex-row">
+      <div className="flex flex-row flex-1 overflow-hidden">
         <Libraries setCurrentView={setCurrentView} />
         {currentView === "main" ? (
-          <MainContent setCurrentSong={setCurrentSong}/>
+          <MainContent/>
         ) : (
           <MyLibrary playlist={currentView} />
         )}
-        {currentSong && (<SongDescription song={currentSong} isPlaying={isPlaying} setIsPlaying={setIsPlaying} />)}
+        {currentSong && (<SongDescription/>)}
       </div>
-      {currentSong && (<PlayerControls currentSong={currentSong} setIsPlaying={setIsPlaying} isPlaying={isPlaying}/>)}
+      {currentSong && (<PlayerControls/>)}
       <ChatManager />
     </div>
   );

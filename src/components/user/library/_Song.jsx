@@ -40,9 +40,7 @@ const Song = ({ song, playlist, deleteSong, index }) => {
     };
 
     // Thêm useEffect để xử lý phát nhạc
-    useEffect(() => {
-        console.log(song);
-        
+    useEffect(() => {        
         if (currentSong && currentSong.id === song.id) {
             if (audio) {
                 audio.pause();

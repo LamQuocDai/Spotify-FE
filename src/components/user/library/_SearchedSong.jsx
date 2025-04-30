@@ -3,7 +3,7 @@ import { getSongsFromPlaylistService } from "../../../services/SongPlaylistServi
 import { IconCircleDashedCheck } from "@tabler/icons-react";
 
 const SearchedSong = ({ song, playlist, addSongToPlaylist }) => {
-    const [visible, setVisible] = useState(false);
+    const [visible, setVisible] = useState(true);
 
     useEffect(() => {
         const fetchSongs = async () => {
@@ -26,12 +26,12 @@ const SearchedSong = ({ song, playlist, addSongToPlaylist }) => {
                 <span className="text-white font-bold">{song.song_name}</span>
                 <span className="text-sm text-gray-400">{song.singer_name}</span>
             </div>
-            {!visible ? (
+            {visible ? (
+                <IconCircleDashedCheck className="ml-auto text-green-500" size={24}/>
+            ) : (
                 <button onClick={() => addSongToPlaylist(song.id)} className="ml-auto px-4 py-2 rounded-full border border-gray-500 bg-transparent text-white text-sm hover:border-white transition-colors">
                     Thêm
                 </button>
-            ) : (
-                <IconCircleDashedCheck className="ml-auto text-green-500" size={24}/>
             )}
         </div>
     );

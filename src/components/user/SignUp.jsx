@@ -38,7 +38,6 @@ const SignUp = () => {
         };
         let isValid = true;
 
-        // Kiểm tra username
         if (!username.trim()) {
             newErrors.username = "Tên người dùng không được để trống.";
             isValid = false;
@@ -47,7 +46,6 @@ const SignUp = () => {
             isValid = false;
         }
 
-        // Kiểm tra email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email) {
             newErrors.email = "Email không được để trống.";
@@ -57,7 +55,6 @@ const SignUp = () => {
             isValid = false;
         }
 
-        // Kiểm tra số điện thoại
         const phoneRegex = /^[0-9]{10,15}$/;
         if (!phone) {
             newErrors.phone = "Số điện thoại không được để trống.";
@@ -67,25 +64,21 @@ const SignUp = () => {
             isValid = false;
         }
 
-        // Kiểm tra giới tính
         if (!gender) {
             newErrors.gender = "Vui lòng chọn giới tính.";
             isValid = false;
         }
 
-        // Kiểm tra tên
         if (!firstName.trim()) {
             newErrors.firstName = "Tên không được để trống.";
             isValid = false;
         }
 
-        // Kiểm tra họ
         if (!lastName.trim()) {
             newErrors.lastName = "Họ không được để trống.";
             isValid = false;
         }
 
-        // Kiểm tra mật khẩu
         const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
         if (!password) {
             newErrors.password = "Mật khẩu không được để trống.";
@@ -95,7 +88,6 @@ const SignUp = () => {
             isValid = false;
         }
 
-        // Kiểm tra xác nhận mật khẩu
         if (!password2) {
             newErrors.password2 = "Xác nhận mật khẩu không được để trống.";
             isValid = false;
@@ -122,7 +114,6 @@ const SignUp = () => {
             general: "",
         });
 
-        // Kiểm tra dữ liệu trước khi gửi
         if (!validateForm()) {
             return;
         }
@@ -140,6 +131,14 @@ const SignUp = () => {
             );
             localStorage.setItem("access_token", data.access);
             localStorage.setItem("refresh_token", data.refresh);
+
+            // Lưu thông tin người dùng (sử dụng first_name từ dữ liệu đăng ký)
+            const userInfo = {
+                first_name: firstName,
+                avatar: data.user?.avatar || null,
+            };
+            localStorage.setItem("user", JSON.stringify(userInfo));
+
             navigate("/");
         } catch (err) {
             const newErrors = {

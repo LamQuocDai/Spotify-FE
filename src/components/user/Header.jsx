@@ -1,10 +1,13 @@
 import { IconHome, IconSearch, IconArticle  } from '@tabler/icons-react';
 const Header = () => {
+    const reloadPage = () => {
+        window.location.reload();
+    }
     return (
-        <div className="flex h-[10vh] flex-row w-screen items-center text-white bg-black">
+        <div className="flex h-[10vh] flex-row items-center text-white bg-black">
             <div className="flex flex-1 flex-row w-full items-center">
-                <img className="h-14" src="https://getheavy.com/wp-content/uploads/2019/12/spotify2019-830x350.jpg" />
-                <IconHome stroke={2} className="mx-2 bg-[#272727] cursor-pointer size-11 border-none bg p-2 rounded-full"/>
+                <img className="h-14 cursor-pointer" src="https://getheavy.com/wp-content/uploads/2019/12/spotify2019-830x350.jpg" onClick={()=>reloadPage()}/>
+                <IconHome stroke={2} className="mx-2 bg-[#272727] cursor-pointer size-11 border-none bg p-2 rounded-full" onClick={()=>reloadPage()}/>
 
                 <div className="flex flex-1 flex-row bg-[#272727] px-4 py-2 items-center rounded-full">
                     <IconSearch stroke={2} className="size-7 "/>

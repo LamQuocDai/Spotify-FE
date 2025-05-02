@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { createPlaylistService, getUserPlaylistService } from "../../../services/playlistService";
+import { createPlaylistService, getUserPlaylistService, searchPlaylistsService,getPlaylistByIdService } from "../../../services/playlistService";
 import { IconPlus, IconWorld, IconArrowRight, IconArrowLeft, IconSearch } from "@tabler/icons-react";
 
 const Library = ({ setCurrentView, playlist }) => {
@@ -26,12 +26,13 @@ const Libraries = ({ setCurrentView }) => {
     const [playlists, setPlaylists] = useState([]);
     const [count, setCount] = useState(0);
     const [widthContainer, setWidthContainer] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
 
     useEffect(() => {
         const fetchPlaylists = async () => {
             setLoading(true);
             try {
-                const response = await getUserPlaylistService();
+                const response = await getPlaylistByIdService(1);
 
                 setPlaylists(response.data.playlists);
 
@@ -48,6 +49,28 @@ const Libraries = ({ setCurrentView }) => {
 
         fetchPlaylists();
     }, []);
+
+    useEffect(() => {
+        const fetchSearchResults = async () => {
+            if (searchValue) {
+                try {
+                    const response = await searchPlaylistsService(searchValue);
+                    setPlaylists(response.data.playlists);
+
+                    setCount(response.data.playlists.length + 1);
+                } catch (error) {
+                    console.error("Error fetching search results:", error);
+                }
+            } else {
+                const response = await getUserPlaylistService();
+
+                setPlaylists(response.data.playlists);
+
+                setCount(response.data.playlists.length + 1);
+            }
+        };
+        fetchSearchResults();
+    }, [searchValue]);
 
     const handleCreatePlaylist = async () => {
         setLoading(true);
@@ -78,7 +101,7 @@ const Libraries = ({ setCurrentView }) => {
     };
 
     return (
-        <div className={`flex ${widthContainer ? 'w-[820px]' : 'w-[420px]'} flex-col bg-[#131313] h-[78vh] px-2 mx-2 text-white rounded-lg`}>
+        <div className={`flex ${widthContainer ? "w-[820px]" : "w-[420px]"} flex-col bg-[#131313] px-2 mx-2 text-white rounded-lg`}>
             <div className="flex flex-row justify-between items-center pt-4 pb-8 px-2">
                 <span className="text-md font-bold">Thư viện</span>
                 <div className="flex items-center">
@@ -99,10 +122,10 @@ const Libraries = ({ setCurrentView }) => {
                 {widthContainer ? (
                     <div className="flex flex-1 flex-row bg-[#272727] mb-3 px-4 py-2 items-center rounded-full">
                         <IconSearch stroke={2} className="size-7 " />
-                        <input type="text" className="flex-1 mx-2 bg-[#272727]  border-r border-white" />
+                        <input onChange={(e) => setSearchValue(e.target.value)} type="text" className="flex-1 mx-2 bg-[#272727]  border-r border-white" />
                     </div>
                 ) : (
-                    <IconSearch stroke={2} className="size-7 mt-2 mb-5 cursor-pointer" onClick={() => setWidthContainer(!widthContainer)}/>
+                    <IconSearch stroke={2} className="size-7 mt-2 mb-5 cursor-pointer" onClick={() => setWidthContainer(!widthContainer)} />
                 )}
             </div>
             <div className="h-[calc(100vh-410px)] overflow-y-auto space-y-4 pr-1 hover:scrollbar-thin hover:scrollbar-thumb-gray-600 hover:scrollbar-track-transparent scrollbar-none">
@@ -123,7 +146,7 @@ const Libraries = ({ setCurrentView }) => {
                     playlists.map((playlist) => <Library key={playlist.id} playlist={playlist} setCurrentView={setCurrentView} />)
                 )}
             </div>
-            <div className="flex flex-col p-4">
+            <div className="flex flex-col px-4">
                 <div className="flex flex-wrap">
                     <span className="text-xs mb-2 mr-7 font-semibold cursor-pointer text-gray-400">Pháp lý</span>
                     <span className="text-xs mb-2 mr-7 font-semibold cursor-pointer text-gray-400">Trung tâm an toàn và quyền riêng tư</span>

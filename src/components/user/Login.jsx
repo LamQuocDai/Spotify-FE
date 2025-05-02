@@ -1,7 +1,56 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { loginUser } from "../../services/authenticateService";
+
 const Login = () => {
     const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({ username: "", password: "", general: "" });
+    const navigate = useNavigate();
+
+    const validateForm = () => {
+        const newErrors = { username: "", password: "", general: "" };
+        let isValid = true;
+
+        // Kiểm tra username không để trống
+        if (!username.trim()) {
+            newErrors.username = "Tên người dùng không được để trống.";
+            isValid = false;
+        }
+
+        // Kiểm tra password không để trống
+        if (!password) {
+            newErrors.password = "Mật khẩu không được để trống.";
+            isValid = false;
+        }
+
+        setErrors(newErrors);
+        return isValid;
+    };
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setErrors({ username: "", password: "", general: "" });
+
+        // Kiểm tra dữ liệu trước khi gửi
+        if (!validateForm()) {
+            return;
+        }
+
+        try {
+            const data = await loginUser(username, password);
+            localStorage.setItem("access_token", data.access);
+            localStorage.setItem("refresh_token", data.refresh);
+            navigate("/");
+        } catch (err) {
+            if (err.detail === "Invalid credentials") {
+                setErrors({ ...errors, general: "Tên người dùng không đúng." });
+            } else {
+                setErrors({ ...errors, general: err.detail || "Đăng nhập thất bại. Vui lòng thử lại." });
+            }
+        }
+    };
+
     return (
         <div className="flex flex-1 flex-col w-full overflow-x-hidden items-center min-h-screen pt-10 bg-gradient-to-b from-[#272727] to-[#131313]">
             <div className="bg-[#121212] w-full max-w-[734px] flex flex-col items-center justify-center rounded-lg px-10 py-10">
@@ -13,24 +62,27 @@ const Login = () => {
                         ></path>
                     </svg>
                 </div>
-                <h1 className="text-3xl font-bold text-white mb-10 text-center">Đăng nhập vào Spotify</h1>
+                <h1 className="text-3xl font-bold text-white mb-10 text-center">
+                    Đăng nhập vào Spotify
+                </h1>
 
                 {/* Social Login Buttons */}
                 <div className="space-y-3">
                     <button className="w-[330px] flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
-                        <img src="https://cdn.freebiesupply.com/logos/large/2x/google-icon-logo-png-transparent.png" alt="Google" className="mr-6 w-6 h-6" />
+                        <img
+                            src="https://cdn.freebiesupply.com/logos/large/2x/google-icon-logo-png-transparent.png"
+                            alt="Google"
+                            className="mr-6 w-6 h-6"
+                        />
                         Tiếp tục bằng Google
                     </button>
                     <button className="w-full flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Facebook_icon.svg/1200px-Facebook_icon.svg.png" alt="Facebook" className="mr-4 w-6 h-6" />
+                        <img
+                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Facebook_icon.svg/1200px-Facebook_icon.svg.png"
+                            alt="Facebook"
+                            className="mr-4 w-6 h-6"
+                        />
                         Tiếp tục bằng Facebook
-                    </button>
-                    <button className="w-full flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
-                        <img src="https://creazilla-store.fra1.digitaloceanspaces.com/icons/3204955/logo-apple-icon-md.png" alt="Apple" className="mr-6 w-6 h-6" />
-                        Tiếp tục bằng Apple
-                    </button>
-                    <button className="w-full flex items-center justify-center gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
-                        Tiếp tục bằng số điện thoại
                     </button>
                 </div>
 
@@ -44,27 +96,46 @@ const Login = () => {
                 </div>
 
                 {/* Login Form */}
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleLogin}>
                     <div className="flex flex-col gap-2 justify-center">
-                        <label className="block text-white">Email hoặc tên người dùng</label>
+                        <label className="block text-white">
+                            Tên người dùng
+                        </label>
                         <input
                             type="text"
+                            value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
-                            placeholder="Email hoặc tên người dùng"
+                            placeholder="Tên người dùng"
+                            required
                         />
-                        {username !="" ? (
-                            <input
-                                type="text"
-                                className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
-                                placeholder="Password"
-                            />
-                        ) : (
-                            <></>
+                        {errors.username && (
+                            <div className="text-red-500 text-sm">{errors.username}</div>
+                        )}
+                        <label className="block text-white">Mật khẩu</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+                            placeholder="Mật khẩu"
+                            required
+                        />
+                        {errors.password && (
+                            <div className="text-red-500 text-sm">{errors.password}</div>
                         )}
                     </div>
 
-                    <button className="w-full bg-[#1ed760] text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform">Tiếp tục</button>
+                    {errors.general && (
+                        <div className="text-red-500 text-center">{errors.general}</div>
+                    )}
+
+                    <button
+                        type="submit"
+                        className="w-full bg-[#1ed760] text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform"
+                    >
+                        Đăng nhập
+                    </button>
                 </form>
 
                 {/* Sign Up Link */}

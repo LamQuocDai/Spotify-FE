@@ -1,16 +1,25 @@
 import { useState, useEffect } from "react";
-import { createPlaylistService, getUserPlaylistService, searchPlaylistsService,getPlaylistByIdService } from "../../../services/playlistService";
+import { createPlaylistService, getUserPlaylistService, searchPlaylistsService, getPlaylistByIdService } from "../../../services/playlistService";
 import { IconPlus, IconWorld, IconArrowRight, IconArrowLeft, IconSearch } from "@tabler/icons-react";
+import { IconMusic } from "@tabler/icons-react";
 
 const Library = ({ setCurrentView, playlist }) => {
     return (
         <div className="flex items-center cursor-pointer bg-gradient-to-br from-[#450af5] to-[#8e8ee5] h-16 w-full rounded-lg px-4">
             <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center bg-[#450af5] p-2 rounded">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                        <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
-                    </svg>
-                </div>
+                {playlist.is_liked_song ? (
+                    <div className="flex items-center justify-center bg-[#450af5] p-2 rounded">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                            <path d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z" />
+                        </svg>
+                    </div>
+                ) : playlist.image ? (
+                    <img src={playlist.image} alt={playlist.title} className="w-10 h-10 rounded-full" />
+                ) : (
+                    <div className="p-2 rounded bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
+                        <IconMusic stroke={2} className="w-6 h-6 text-gray-400" />
+                    </div>
+                )}
                 <div>
                     <h3 className="text-sm font-bold cursor-pointer" onClick={() => setCurrentView(playlist)}>
                         {playlist.title}
@@ -24,19 +33,15 @@ const Library = ({ setCurrentView, playlist }) => {
 const Libraries = ({ setCurrentView, currentView }) => {
     const [loading, setLoading] = useState(false);
     const [playlists, setPlaylists] = useState([]);
-    const [count, setCount] = useState(0);
     const [widthContainer, setWidthContainer] = useState(false);
     const [searchValue, setSearchValue] = useState("");
 
     useEffect(() => {
         const fetchPlaylists = async () => {
-            
             setLoading(true);
             try {
                 const response = await getUserPlaylistService();
                 setPlaylists(response.data.playlists.reverse());
-
-                setCount(response.data.playlists.length + 1);
             } catch (error) {
                 console.error("Error fetching playlists:", error);
                 if (error.response && error.response.status === 401) {
@@ -55,18 +60,14 @@ const Libraries = ({ setCurrentView, currentView }) => {
             if (searchValue) {
                 try {
                     const response = await searchPlaylistsService(searchValue);
-                    setPlaylists(response.data.playlists);
-
-                    setCount(response.data.playlists.length + 1);
+                    setPlaylists(response.data.playlists.reverse());
                 } catch (error) {
                     console.error("Error fetching search results:", error);
                 }
             } else {
                 const response = await getUserPlaylistService();
 
-                setPlaylists(response.data.playlists.reverse());
-
-                setCount(response.data.playlists.length + 1);
+                setPlaylists(response.data.playlists);
             }
         };
         fetchSearchResults();
@@ -76,7 +77,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
         setLoading(true);
 
         const formData = {
-            title: `Danh sách phát của bạn: ${count}`,
+            title: `Danh sách phát của bạn`,
             description: "Mô tả playlist mới",
         };
 
@@ -90,14 +91,12 @@ const Libraries = ({ setCurrentView, currentView }) => {
                     description: response.data.description,
                 },
             ]);
-            setCount(count + 1);
             setCurrentView(response.data);
         } catch (error) {
             console.error("Error in creating playlist:", error);
         } finally {
             setLoading(false);
         }
-
     };
 
     return (

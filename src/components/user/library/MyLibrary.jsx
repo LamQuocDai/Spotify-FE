@@ -123,7 +123,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
 
                     {/* Hiển thị danh sách bài hát */}
                     {songs.length > 0 ? (
-                        songs.map((song, index) => <Song key={song.id} song={song} playlist={playlist} deleteSong={deleteSong} index={index} />)
+                        songs.map((song, index) => <Song key={song.id} song={song} playlist={playlist} deleteSong={deleteSong} songs={songs} index={index} />)
                     ) : (
                         <div className="text-gray-400 mt-4">Chưa có bài hát nào trong playlist này</div>
                     )}

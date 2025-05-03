@@ -1,101 +1,90 @@
 import React, { useEffect, useState } from "react";
-import { IconPlayerPlayFilled } from "@tabler/icons-react";
 import { getAllSongs } from "../../services/SongsService";
-import { useAudio } from "../../utils/audioContext";
+import { getAllGenres } from "../../services/genresService";
+import Song from "./_Song";
 
-const Song = ({ song }) => {
-    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying } = useAudio();
-    
-    const playAudio = () => {
-        setCurrentSong(song);
+const MainContent = ({ setCurrentView, setListSongsDetail }) => {
+    const [allSongs, setAllSongs] = useState([]);
+    const [contextMenu, setContextMenu] = useState(null);
+    const [genres, setGenres] = useState([]);
+
+    // Close context menu
+    const handleCloseContextMenu = () => {
+        setContextMenu(null);
     };
 
-    useEffect(() => {
-        if (currentSong && currentSong.id === song.id) {
-            if (audio) {
-                audio.pause();
+    // Handle click outside (left or right click) to close context menu
+    const handleClickOutside = (e) => {
+        if (contextMenu) {
+            // Only close if the click is outside the context menu
+            const contextMenuElement = document.querySelector(".context-menu");
+            if (contextMenuElement && !contextMenuElement.contains(e.target)) {
+                handleCloseContextMenu();
             }
-            const newAudio = new Audio(song.url_audio);
-            newAudio.volume = 0.5; 
-            newAudio.play();
-            setAudio(newAudio);
-            setIsPlaying(true);
         }
-    }, [currentSong]);
+    };
 
-    return (
-        <div className="group flex-shrink-0 hover:bg-gradient-to-b from-[#131313] to-[#272727] text-white cursor-pointer w-[160px] p-3 rounded-md">
-            <div className="relative">
-                <img
-                    className="h-[180px] w-[180px] rounded-lg object-cover object-center"
-                    src={song.image}
-                    alt=""
-                />
-                <button
-                    className="absolute bottom-2 right-2 bg-green-500 rounded-full hidden group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400"
-                    onClick={playAudio}
-                >
-                    <IconPlayerPlayFilled className="size-12 p-3 text-black" />
-                </button>
-            </div>
-            <div className="mt-2 w-full">
-                <h3 className="text-base font-medium truncate">{song.song_name}</h3>
-                <span className="text-sm text-gray-400">{song.singer_name}</span>
-            </div>
-        </div>
-    );
-};
-
-const Articsle = () => {
-    return (
-        <div className="group flex-shrink-0 text-white hover:bg-gradient-to-b from-[#131313] to-[#272727] cursor-pointer w-[180px] p-3 rounded-md">
-            <div className="relative">
-                <img
-                    className="h-[160px] w-[180px] rounded-full object-cover object-center"
-                    src="https://kenh14cdn.com/203336854389633024/2025/3/23/phao-sunghiepchuongonline-video-cuttercom5-ezgifcom-video-to-gif-converter-1742743391566-17427433926181286024766.gif"
-                    alt=""
-                />
-            </div>
-            <div className="mt-2 w-full">
-                <h3 className="text-base font-medium truncate">Người yêu cũ anh peter</h3>
-                <span className="text-sm text-gray-400">Pháo</span>
-            </div>
-        </div>
-    );
-};
-
-const MainContent = () => {
-    const [trendingSongs, setTrendingSongs] = useState([]);
-    
+    // Add and remove click outside eventTheresult event listeners
     useEffect(() => {
-        const fetchTrendingSongs = async () => {
+        document.addEventListener("click", handleClickOutside);
+        document.addEventListener("contextmenu", handleClickOutside);
+        return () => {
+            document.removeEventListener("click", handleClickOutside);
+            document.removeEventListener("contextmenu", handleClickOutside);
+        };
+    }, [contextMenu]);
+
+    useEffect(() => {
+        const fetchAllSongs = async () => {
             try {
-                const response = await getAllSongs();                
-                setTrendingSongs(response.data.results);
+                const response = await getAllSongs();
+                setAllSongs(response.data.results);
+                const genresResponse = await getAllGenres();
+                setGenres(genresResponse.data);
             } catch (error) {
                 console.error("Error fetching trending songs:", error);
             }
         };
 
-        fetchTrendingSongs();
+        fetchAllSongs();
     }, []);
+
+    const handleAllSongs = (songs) => {
+        setListSongsDetail(songs);
+        setCurrentView("listSongs");
+    };
 
     return (
         <div className="bg-[#131313] text-white p-4 mr-2 rounded-lg flex-1 overflow-y-auto space-y-4">
             <div>
                 <div className="flex flex-row justify-between">
-                    <h2 className="text-2xl font-bold mb-6 cursor-pointer hover:underline">Trending Songs</h2>
-                    <span className="text-sm font-bold text-gray-400 cursor-pointer hover:underline">Hiện tất cả</span>
+                    <h2 className="text-2xl font-bold mb-6 cursor-pointer hover:underline">Tất cả bài hát</h2>
+                    <span className="text-sm font-bold text-gray-400 cursor-pointer hover:underline" onClick={() => handleAllSongs(allSongs)}>
+                        Hiện tất cả
+                    </span>
                 </div>
                 <div className="flex flex-row gap-4 overflow-x-auto pb-4 scrollbar-none">
-                    {trendingSongs.map((song, index) => (
-                        <Song
-                            key={index}
-                            song={song}
-                        />
+                    {allSongs.map((song) => (
+                        <Song key={song.id} song={song} contextMenu={contextMenu} setContextMenu={setContextMenu} handleCloseContextMenu={handleCloseContextMenu} list={allSongs} />
                     ))}
                 </div>
             </div>
+            {genres.length > 0 &&
+                genres.map((genre) => (
+                    <>
+                        <div className="flex flex-row justify-between">
+                            <h2 className="text-2xl font-bold mb-6 cursor-pointer hover:underline">{genre.name}</h2>
+                            <span className="text-sm font-bold text-gray-400 cursor-pointer hover:underline" onClick={() => handleAllSongs(genre.songs)}>
+                                Hiện tất cả
+                            </span>
+                        </div>
+                        <div className="flex flex-row gap-4 overflow-x-auto pb-4 scrollbar-none">
+                            {genre.songs.map((song) => (
+                                <Song key={song.id} song={song} contextMenu={contextMenu} setContextMenu={setContextMenu} handleCloseContextMenu={handleCloseContextMenu} list={genre.songs} width={150} />
+                            ))}
+                        </div>
+                    </>
+                ))}
         </div>
     );
 };

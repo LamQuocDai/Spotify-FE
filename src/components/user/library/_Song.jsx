@@ -31,27 +31,13 @@ const ContextMenu = ({ x, y, deleteSong, song, onClose }) => {
     );
 };
 
-const Song = ({ song, playlist, deleteSong, index }) => {
+const Song = ({ song, playlist, deleteSong, songs,index }) => {
     const [contextMenu, setContextMenu] = useState(null);
-    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, volume } = useAudio();
+    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, volume, setNewPlaylist } = useAudio();
 
-    const onPlaySong = () => {
-        setCurrentSong(song);
+    const onPlaySong = () => {        
+        setNewPlaylist(songs, index);
     };
-
-    // Thêm useEffect để xử lý phát nhạc
-    useEffect(() => {        
-        if (currentSong && currentSong.id === song.id) {
-            if (audio) {
-                audio.pause();
-            }
-            const newAudio = new Audio(song.url_audio);
-            newAudio.volume = volume / 100; // Sử dụng volume từ AudioContext
-            newAudio.play();
-            setAudio(newAudio);
-            setIsPlaying(true);
-        }
-    }, [currentSong]);
 
     // Xử lý sự kiện chuột phải
     const handleContextMenu = (e) => {

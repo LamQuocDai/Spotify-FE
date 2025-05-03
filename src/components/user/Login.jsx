@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { login } from "../../services/authService";
-import { getUsersService } from "../../services/UserService";
+import { saveToken } from "../../utils/token";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const [username, setUsername] = useState("");
-  onst[(password, setPassword)] = useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({
     username: "",
     password: "",
@@ -44,12 +45,19 @@ const Login = () => {
       const res = await login(username, password);
 
       if (res.status === 200) {
-        // Save token to local storage or state management
-        localStorage.setItem("access_token", res.data.access);
-        // Redirect to home page or dashboard
-        console.log("Login successful");
-        navigate("/");
-        return;
+        const accessToken = res.data.access;
+        saveToken(accessToken);
+        console.log(accessToken);
+        const decodedToken = jwtDecode(accessToken);
+        const userRole = decodedToken["role"];
+        console.log(userRole);
+        if (userRole === "admin") {
+          navigate("/admin");
+          return;
+        } else {
+          navigate("/");
+          return;
+        }
       }
       navigate("/login");
     } catch (err) {

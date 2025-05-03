@@ -15,6 +15,7 @@ import Playlist from "./components/admin/Playlists/Playlists";
 import CreatePlaylistForm from "./components/admin/Playlists/Create/CreatePlaylistForm";
 import UpdatePlaylistForm from "./components/admin/Playlists/Update/UpdatePlaylistForm";
 import { AudioProvider } from "./utils/audioContext";
+import SignUp from "./components/user/SignUp";
 
 function App() {
     return (
@@ -23,6 +24,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<SignUp />} />
 
                     <Route path="admin" element={<Admin />}>
                         <Route path="users" element={<User />} />

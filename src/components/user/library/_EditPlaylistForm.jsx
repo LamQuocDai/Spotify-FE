@@ -10,8 +10,13 @@ const EditPlaylistForm = ({ playlist, onClose, setCurrentView }) => {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const imageUrl = URL.createObjectURL(file); // Tạo URL tạm thời cho ảnh
-            setImage(imageUrl);
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                setImage(reader.result); // base64 string
+            };
+
+            reader.readAsDataURL(file); // base64 image
         }
     };
 
@@ -20,10 +25,13 @@ const EditPlaylistForm = ({ playlist, onClose, setCurrentView }) => {
             const data = {
                 title: title,
                 description: description,
+                image: image
             }
             const res = await updatePlaylistService(playlist.id, data);
             setCurrentView(res.data);
+            setImage(res.data.image);
             alert("Cập nhật playlist thành công!");
+            window.location.reload();
             onClose();
         } catch (error) {
             console.error("Error updating playlist:", error);
@@ -37,7 +45,8 @@ const EditPlaylistForm = ({ playlist, onClose, setCurrentView }) => {
                 <h2 className="text-xl font-bold mb-4">Chỉnh sửa Playlist</h2>
                 <div className="flex gap-4 mb-4">
                     {/* Ảnh bên trái */}
-                    <div className="relative w-[230px] bg-[#333333] rounded flex items-center justify-center overflow-hidden cursor-pointer">
+                    <div className="relative w-[230px] bg-[#333333] rounded flex items-center justify-center overflow-hidden cursor-pointer"
+                        onClick={() => document.getElementById("imageInput").click()}>
                         {image ? (
                             <img src={image} alt="Playlist" className="absolute inset-0 w-full h-full object-cover rounded" />
                         ) : (

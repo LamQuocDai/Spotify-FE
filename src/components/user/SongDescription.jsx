@@ -3,8 +3,9 @@ import { useAudio } from "../../utils/audioContext";
 
 const SongDescription = () => {
 
-  const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, isPlaying } = useAudio();
+  const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, isPlaying, duration,currentTime } = useAudio();
   
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   useEffect(() => {
     const videoElement = document.getElementById("song-video");
@@ -17,15 +18,13 @@ const SongDescription = () => {
     }
   }, [isPlaying]); // Theo dõi sự thay đổi của isPlaying
 
-  const handlePause = () => {
-    setIsPlaying(false);
-    audio.pause() // Cập nhật trạng thái isPlaying thành false khi video tạm dừng
-  };
-  const handlePlay = () => {
-    setIsPlaying(true); // Cập nhật trạng thái isPlaying thành true khi video phát
-    audio.play()
-  }
-
+  useEffect(() => {
+    const videoElement = document.getElementById("song-video");
+    if (videoElement) {
+      videoElement.currentTime = currentTime; // Cập nhật thời gian phát video
+    }
+  }, [currentTime]);
+  
   return (
     <div className="w-[400px]">
       <span>Song</span>
@@ -35,9 +34,7 @@ const SongDescription = () => {
           src={currentSong.url_video}
           controls
           muted // Tắt âm thanh
-          className="w-full h-auto rounded-lg hide-volume"
-          onPause={handlePause} // Gọi handlePause khi video tạm dừng
-          onPlay={handlePlay}
+          className="w-full h-auto rounded-lg hide-volume hide-native-controls"
         />
       )}
     </div>

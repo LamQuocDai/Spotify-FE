@@ -1,16 +1,44 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { login } from "../../services/authService";
-import { useNavigate } from "react-router-dom";
 import { getUsersService } from "../../services/UserService";
 
 const Login = () => {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  onst[(password, setPassword)] = useState("");
+  const [errors, setErrors] = useState({
+    username: "",
+    password: "",
+    general: "",
+  });
   const navigate = useNavigate();
 
+  const validateForm = () => {
+    const newErrors = { username: "", password: "", general: "" };
+    let isValid = true;
+
+    if (!username.trim()) {
+      newErrors.username = "Tên người dùng hoặc email không được để trống.";
+      isValid = false;
+    }
+
+    if (!password) {
+      newErrors.password = "Mật khẩu không được để trống.";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    setErrors({ username: "", password: "", general: "" });
+
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       // Handle login logic here
       const res = await login(username, password);
@@ -24,20 +52,20 @@ const Login = () => {
         return;
       }
       navigate("/login");
-    } catch (error) {
-      console.error("Login failed", error);
+    } catch (err) {
+      if (err.detail === "Invalid credentials") {
+        setErrors({
+          ...errors,
+          general: "Tên người dùng hoặc mật khẩu không đúng.",
+        });
+      } else {
+        setErrors({
+          ...errors,
+          general: err.detail || "Đăng nhập thất bại. Vui lòng thử lại.",
+        });
+      }
     }
   };
-
-  const handleTest = async () => {
-    try {
-      const res = await getUsersService();
-      console.log(res.data);
-    } catch (error) {
-      console.error("Error fetching users", error);
-    }
-  };
-
   return (
     <div className="flex flex-1 flex-col w-full overflow-x-hidden items-center min-h-screen pt-10 bg-gradient-to-b from-[#272727] to-[#131313]">
       <div className="bg-[#121212] w-full max-w-[734px] flex flex-col items-center justify-center rounded-lg px-10 py-10">
@@ -55,10 +83,7 @@ const Login = () => {
 
         {/* Social Login Buttons */}
         <div className="space-y-3">
-          <button
-            className="w-[330px] flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors"
-            onClick={handleTest}
-          >
+          <button className="w-[330px] flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
             <img
               src="https://cdn.freebiesupply.com/logos/large/2x/google-icon-logo-png-transparent.png"
               alt="Google"
@@ -74,17 +99,6 @@ const Login = () => {
             />
             Tiếp tục bằng Facebook
           </button>
-          <button className="w-full flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
-            <img
-              src="https://creazilla-store.fra1.digitaloceanspaces.com/icons/3204955/logo-apple-icon-md.png"
-              alt="Apple"
-              className="mr-6 w-6 h-6"
-            />
-            Tiếp tục bằng Apple
-          </button>
-          <button className="w-full flex items-center justify-center gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
-            Tiếp tục bằng số điện thoại
-          </button>
         </div>
 
         <div className="my-4 relative">
@@ -97,31 +111,43 @@ const Login = () => {
         </div>
 
         {/* Login Form */}
-        <form className="space-y-4" onSubmit={(e) => handleLogin(e)}>
+        <form className="space-y-4" onSubmit={handleLogin}>
           <div className="flex flex-col gap-2 justify-center">
-            <label className="block text-white">
-              Email hoặc tên người dùng
-            </label>
+            <label className="block text-white">Tên người dùng</label>
             <input
               type="text"
+              value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
-              placeholder="Email hoặc tên người dùng"
+              placeholder="Tên người dùng"
+              required
             />
-            {username != "" ? (
-              <input
-                type="text"
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
-                placeholder="Password"
-              />
-            ) : (
-              <></>
+            {errors.username && (
+              <div className="text-red-500 text-sm">{errors.username}</div>
+            )}
+            <label className="block text-white">Mật khẩu</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              placeholder="Mật khẩu"
+              required
+            />
+            {errors.password && (
+              <div className="text-red-500 text-sm">{errors.password}</div>
             )}
           </div>
 
-          <button className="w-full bg-[#1ed760] text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform">
-            Tiếp tục
+          {errors.general && (
+            <div className="text-red-500 text-center">{errors.general}</div>
+          )}
+
+          <button
+            type="submit"
+            className="w-full bg-[#1ed760] text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform"
+          >
+            Đăng nhập
           </button>
         </form>
 

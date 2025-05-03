@@ -14,34 +14,38 @@ import UpdateGenreForm from "./components/admin/Genre/Update/UpdateGenreForm";
 import Playlist from "./components/admin/Playlists/Playlists";
 import CreatePlaylistForm from "./components/admin/Playlists/Create/CreatePlaylistForm";
 import UpdatePlaylistForm from "./components/admin/Playlists/Update/UpdatePlaylistForm";
+import { AudioProvider } from "./utils/audioContext";
+import SignUp from "./components/user/SignUp";
 import AuthProvider from "./context/auth/AuthProvider";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<Login />} />
+        <AudioProvider>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<Login />} />
 
-          <Route path="admin" element={<Admin />}>
-            <Route path="users" element={<User />} />
-            <Route path="users/create" element={<CreateUserForm />} />
-            <Route path="users/update" element={<UpdateUserForm />} />
+            <Route path="admin" element={<Admin />}>
+              <Route path="users" element={<User />} />
+              <Route path="users/create" element={<CreateUserForm />} />
+              <Route path="users/update" element={<UpdateUserForm />} />
 
-            <Route path="songs" element={<Song />} />
-            <Route path="songs/create" element={<CreateSongForm />} />
-            <Route path="songs/update" element={<UpdateSongForm />} />
+              <Route path="songs" element={<Song />} />
+              <Route path="songs/create" element={<CreateSongForm />} />
+              <Route path="songs/update" element={<UpdateSongForm />} />
 
-            <Route path="genres" element={<Genre />} />
-            <Route path="genres/create" element={<CreateGenreForm />} />
-            <Route path="genres/update" element={<UpdateGenreForm />} />
+              <Route path="genres" element={<Genre />} />
+              <Route path="genres/create" element={<CreateGenreForm />} />
+              <Route path="genres/update" element={<UpdateGenreForm />} />
 
-            <Route path="playlists" element={<Playlist />} />
-            <Route path="playlists/create" element={<CreatePlaylistForm />} />
-            <Route path="playlists/update" element={<UpdatePlaylistForm />} />
-          </Route>
-        </Routes>
+              <Route path="playlists" element={<Playlist />} />
+              <Route path="playlists/create" element={<CreatePlaylistForm />} />
+              <Route path="playlists/update" element={<UpdatePlaylistForm />} />
+            </Route>
+          </Routes>
+        </AudioProvider>
       </BrowserRouter>
     </AuthProvider>
   );

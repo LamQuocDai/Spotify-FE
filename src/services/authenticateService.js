@@ -5,6 +5,7 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000,
 });
 
 apiClient.interceptors.request.use(
@@ -55,7 +56,6 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Hàm đăng nhập
 export const loginUser = async (username, password) => {
   try {
     const response = await apiClient.post("/users/login/", {
@@ -101,6 +101,43 @@ export const registerUser = async (
   }
 };
 
+export const socialLogin = async (code, provider) => {
+  console.log(`Attempting ${provider} login with code: ${code.substring(0, 10)}...`);
 
+  try {
+    const response = await apiClient.post("/users/social-login/", {
+      code,
+      provider,
+    });
+
+    console.log(`${provider} login successful:`, {
+      status: response.status,
+      data: response.data,
+    });
+
+    return response.data;
+  } catch (error) {
+    const errorDetails = {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        baseURL: error.config?.baseURL,
+        headers: error.config?.headers
+          ? { ...error.config.headers, Authorization: "[REDACTED]" }
+          : undefined,
+        data: error.config?.data,
+      },
+    };
+    console.error(`${provider} login error:`, errorDetails);
+
+    throw error.response?.data || {
+      detail: `Đăng nhập ${provider} thất bại.`,
+    };
+  }
+};
 
 export default apiClient;

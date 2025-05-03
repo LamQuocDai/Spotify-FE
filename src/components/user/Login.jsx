@@ -1,6 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { loginUser } from "../../services/authenticateService";
+
+const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -11,6 +15,14 @@ const Login = () => {
     general: "",
   });
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Display error from OAuthCallback redirect
+    if (location.state?.error) {
+      setErrors((prev) => ({ ...prev, general: location.state.error }));
+    }
+  }, [location]);
 
   const validateForm = () => {
     const newErrors = { username: "", password: "", general: "" };
@@ -42,14 +54,11 @@ const Login = () => {
       const data = await loginUser(username, password);
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
-
-      // Lưu thông tin người dùng (giả sử BE trả về thông tin như first_name và avatar)
       const userInfo = {
         first_name: data.user?.first_name || username,
         avatar: data.user?.avatar || null,
       };
       localStorage.setItem("user", JSON.stringify(userInfo));
-
       navigate("/");
     } catch (err) {
       if (err.detail === "Invalid credentials") {
@@ -64,6 +73,13 @@ const Login = () => {
         });
       }
     }
+  };
+
+  const handleGoogleLogin = () => {
+    const redirectUri = "http://localhost:5173/auth/callback";
+    const scope = "email profile";
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&prompt=select_account&provider=google`;
+    window.location.href = url;
   };
 
   return (
@@ -81,23 +97,23 @@ const Login = () => {
           Đăng nhập vào Spotify
         </h1>
 
+        {/* Display General Error */}
+        {errors.general && (
+          <div className="text-red-500 text-center mb-4">{errors.general}</div>
+        )}
+
         {/* Social Login Buttons */}
         <div className="space-y-3">
-          <button className="w-[330px] flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
+          <button
+            onClick={handleGoogleLogin}
+            className="w-[330px] flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors"
+          >
             <img
               src="https://cdn.freebiesupply.com/logos/large/2x/google-icon-logo-png-transparent.png"
               alt="Google"
               className="mr-6 w-6 h-6"
             />
             Tiếp tục bằng Google
-          </button>
-          <button className="w-full flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Facebook_icon.svg/1200px-Facebook_icon.svg.png"
-              alt="Facebook"
-              className="mr-4 w-6 h-6"
-            />
-            Tiếp tục bằng Facebook
           </button>
         </div>
 
@@ -138,10 +154,6 @@ const Login = () => {
               <div className="text-red-500 text-sm">{errors.password}</div>
             )}
           </div>
-
-          {errors.general && (
-            <div className="text-red-500 text-center">{errors.general}</div>
-          )}
 
           <button
             type="submit"

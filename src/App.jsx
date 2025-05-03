@@ -16,37 +16,40 @@ import CreatePlaylistForm from "./components/admin/Playlists/Create/CreatePlayli
 import UpdatePlaylistForm from "./components/admin/Playlists/Update/UpdatePlaylistForm";
 import { AudioProvider } from "./utils/audioContext";
 import SignUp from "./components/user/SignUp";
+import OAuthCallback from "./components/auth/OAuthCallback";
 
 function App() {
-    return (
-        <BrowserRouter>
-            <AudioProvider>
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<SignUp />} />
+  return (
+    <BrowserRouter>
+      <AudioProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
 
-                    <Route path="admin" element={<Admin />}>
-                        <Route path="users" element={<User />} />
-                        <Route path="users/create" element={<CreateUserForm />} />
-                        <Route path="users/update" element={<UpdateUserForm />} />
+          <Route path="/" element={<HomePage />} />
 
-                        <Route path="songs" element={<Song />} />
-                        <Route path="songs/create" element={<CreateSongForm />} />
-                        <Route path="songs/update" element={<UpdateSongForm />} />
+          <Route path="admin" element={<Admin />}>
+            <Route path="users" element={<User />} />
+            <Route path="users/create" element={<CreateUserForm />} />
+            <Route path="users/update" element={<UpdateUserForm />} />
 
-                        <Route path="genres" element={<Genre />} />
-                        <Route path="genres/create" element={<CreateGenreForm />} />
-                        <Route path="genres/update" element={<UpdateGenreForm />} />
+            <Route path="songs" element={<Song />} />
+            <Route path="songs/create" element={<CreateSongForm />} />
+            <Route path="songs/update" element={<UpdateSongForm />} />
 
-                        <Route path="playlists" element={<Playlist />} />
-                        <Route path="playlists/create" element={<CreatePlaylistForm />} />
-                        <Route path="playlists/update" element={<UpdatePlaylistForm />} />
-                    </Route>
-                </Routes>
-            </AudioProvider>
-        </BrowserRouter>
-    );
+            <Route path="genres" element={<Genre />} />
+            <Route path="genres/create" element={<CreateGenreForm />} />
+            <Route path="genres/update" element={<UpdateGenreForm />} />
+
+            <Route path="playlists" element={<Playlist />} />
+            <Route path="playlists/create" element={<CreatePlaylistForm />} />
+            <Route path="playlists/update" element={<UpdatePlaylistForm />} />
+          </Route>
+        </Routes>
+      </AudioProvider>
+    </BrowserRouter>
+  );
 }
 
 export default App;

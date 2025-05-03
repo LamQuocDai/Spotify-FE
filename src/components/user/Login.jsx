@@ -1,6 +1,11 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { loginUser } from "../../services/authenticateService";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { login } from "../../services/authService";
+import { saveToken } from "../../utils/token";
+import { jwtDecode } from "jwt-decode";
 
 const GOOGLE_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
@@ -41,9 +46,9 @@ const Login = () => {
     setErrors(newErrors);
     return isValid;
   };
-
   const handleLogin = async (e) => {
     e.preventDefault();
+
     setErrors({ username: "", password: "", general: "" });
 
     if (!validateForm()) {
@@ -51,15 +56,25 @@ const Login = () => {
     }
 
     try {
-      const data = await loginUser(username, password);
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
-      const userInfo = {
-        first_name: data.user?.first_name || username,
-        avatar: data.user?.avatar || null,
-      };
-      localStorage.setItem("user", JSON.stringify(userInfo));
-      navigate("/");
+      // Handle login logic here
+      const res = await login(username, password);
+
+      if (res.status === 200) {
+        const accessToken = res.data.access;
+        saveToken(accessToken);
+        console.log(accessToken);
+        const decodedToken = jwtDecode(accessToken);
+        const userRole = decodedToken["role"];
+        console.log(userRole);
+        if (userRole === "admin") {
+          navigate("/admin");
+          return;
+        } else {
+          navigate("/");
+          return;
+        }
+      }
+      navigate("/login");
     } catch (err) {
       if (err.detail === "Invalid credentials") {
         setErrors({

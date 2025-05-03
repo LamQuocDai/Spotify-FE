@@ -1,9 +1,11 @@
-import { use, useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { IconCirclePlus, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerPlayFilled, IconPlayerPauseFilled, IconVolume, IconVolume3 } from "@tabler/icons-react";
 import { useAudio } from "../../utils/audioContext";
+import { formatTime } from "../../utils/timeFormat";
 
 const PlayerControls = () => {
-    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume } = useAudio();
+    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume, currentTime, duration, setPlaybackTime } = useAudio();
+    const progressRef = useRef(null);
 
     const togglePlayPause = () => {
         setIsPlaying(!isPlaying);
@@ -19,12 +21,25 @@ const PlayerControls = () => {
         setVolume(newVolume);
     };
 
+    // Tính phần trăm tiến trình
+    const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+    // Xử lý khi nhấp vào thanh tiến trình
+    const handleProgressClick = (e) => {
+        if (progressRef.current && duration > 0) {
+            const rect = progressRef.current.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const newTime = (clickX / width) * duration;
+            setPlaybackTime(Math.round(newTime));
+        }
+    };
+
     useEffect(() => {
         const handleKeyPress = (e) => {
             if (e.code === "Space" && currentSong) {
                 e.preventDefault();
                 togglePlayPause();
-                console.log(1); // Log chỉ xuất hiện 1 lần mỗi khi nhấn Space
             }
         };
 
@@ -60,11 +75,11 @@ const PlayerControls = () => {
                             <IconPlayerSkipForwardFilled className="text-white size-6" />
                         </div>
                         <div className="w-full flex items-center gap-2">
-                            <span className="text-xs text-gray-400">1:42</span>
-                            <div className="h-1 flex-1 bg-gray-600 rounded-full">
-                                <div className="h-1 w-1/3 bg-white rounded-full"></div>
+                            <span className="text-xs text-gray-400">{formatTime(currentTime)}</span>
+                            <div className="h-1 flex-1 bg-gray-600 rounded-full cursor-pointer" ref={progressRef} onClick={handleProgressClick}>
+                                <div className="h-1 bg-white rounded-full" style={{ width: `${progressPercent}%` }}></div>
                             </div>
-                            <span className="text-xs text-gray-400">2:57</span>
+                            <span className="text-xs text-gray-400">{formatTime(duration)}</span>
                         </div>
                     </div>
 

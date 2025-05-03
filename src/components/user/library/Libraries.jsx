@@ -21,7 +21,7 @@ const Library = ({ setCurrentView, playlist }) => {
         </div>
     );
 };
-const Libraries = ({ setCurrentView }) => {
+const Libraries = ({ setCurrentView, currentView }) => {
     const [loading, setLoading] = useState(false);
     const [playlists, setPlaylists] = useState([]);
     const [count, setCount] = useState(0);
@@ -30,11 +30,11 @@ const Libraries = ({ setCurrentView }) => {
 
     useEffect(() => {
         const fetchPlaylists = async () => {
+            
             setLoading(true);
             try {
-                const response = await getPlaylistByIdService(1);
-
-                setPlaylists(response.data.playlists);
+                const response = await getUserPlaylistService();
+                setPlaylists(response.data.playlists.reverse());
 
                 setCount(response.data.playlists.length + 1);
             } catch (error) {
@@ -48,7 +48,7 @@ const Libraries = ({ setCurrentView }) => {
         };
 
         fetchPlaylists();
-    }, []);
+    }, [currentView]);
 
     useEffect(() => {
         const fetchSearchResults = async () => {
@@ -64,7 +64,7 @@ const Libraries = ({ setCurrentView }) => {
             } else {
                 const response = await getUserPlaylistService();
 
-                setPlaylists(response.data.playlists);
+                setPlaylists(response.data.playlists.reverse());
 
                 setCount(response.data.playlists.length + 1);
             }
@@ -91,13 +91,13 @@ const Libraries = ({ setCurrentView }) => {
                 },
             ]);
             setCount(count + 1);
+            setCurrentView(response.data);
         } catch (error) {
             console.error("Error in creating playlist:", error);
         } finally {
             setLoading(false);
         }
 
-        setCurrentView("MyLibrary");
     };
 
     return (

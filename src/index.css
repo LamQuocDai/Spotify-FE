@@ -7,3 +7,7 @@
   padding: 0;
   box-sizing: border-box;
 }
+/* src/index.css hoặc global.css */
+.hide-native-controls::-webkit-media-controls {
+  display: none !important;
+}

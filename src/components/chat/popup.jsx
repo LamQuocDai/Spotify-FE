@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import {
   Avatar,
   ActionIcon,
@@ -24,40 +24,147 @@ import {
   IconMoon,
   IconSquarePlus,
 } from "@tabler/icons-react";
+import {
+  initChatWebSocket,
+  getMessagesService,
+} from "../../services/chatService";
+import { AuthContext } from "../../context/auth/authContext";
 
 export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
-  const [messages, setMessages] = useState(chat.messages || [
-    {
-      id: 1,
-      sender: chat.name,
-      content: "Portfolio 5d chuyên cần",
-      timestamp: "",
-      isUser: false,
-    },
-    {
-      id: 2,
-      sender: chat.name,
-      content: "là mình đx 5 r hả a",
-      timestamp: "",
-      isUser: false,
-    },
-    {
-      id: 3,
-      sender: chat.name,
-      content: "tôi đang ở thành máy",
-      timestamp: "08:50",
-      isUser: false,
-    },
-  ]);
-
+  const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
+  const wsRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const { user } = useContext(AuthContext);
+
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Load initial messages
+  useEffect(() => {
+    const loadMessages = async () => {
+      try {
+        const response = await getMessagesService(chat.id);
+        if (response && response.data) {
+          // Transform messages to our format
+          const formattedMessages = response.data.map((msg) => ({
+            id: msg.id,
+            sender: msg.user1.id === user?.id ? "You" : msg.user1.username,
+            content: msg.message,
+            timestamp: new Date(msg.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            isUser: msg.user1.id === user?.id,
+          }));
+          setMessages(formattedMessages);
+        }
+      } catch (error) {
+        console.error("Failed to load messages:", error);
+        // Fallback mock messages
+        setMessages([
+          {
+            id: 1,
+            sender: chat.name,
+            content: "Hello there!",
+            timestamp: "",
+            isUser: false,
+          },
+          {
+            id: 2,
+            sender: "You",
+            content: "Hi! How are you?",
+            timestamp: "",
+            isUser: true,
+          },
+        ]);
+      }
+    };
+
+    loadMessages();
+  }, [chat.id, user?.id]);
+
+  // Set up websocket connection
+  useEffect(() => {
+    // Make sure we have a user ID
+    if (!user?.id) {
+      console.warn("User not authenticated, can't establish chat connection");
+      return;
+    }
+
+    // Connect to the other user's chat
+    const otherUserId = chat.userId || chat.id;
+
+    const handleMessage = (data) => {
+      // Handle messages received from WebSocket
+      if (data.message) {
+        const newMessage = {
+          id: Date.now(), // Use timestamp as temporary ID
+          sender: data.sender === user?.id.toString() ? "You" : chat.name,
+          content: data.message,
+          timestamp: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          isUser: data.sender === user?.id.toString(),
+        };
+
+        setMessages((prevMessages) => [...prevMessages, newMessage]);
+      }
+    };
+
+    const handleConnect = () => {
+      setIsConnected(true);
+      console.log(`Connected to chat with ${chat.name}`);
+    };
+
+    const handleClose = () => {
+      setIsConnected(false);
+      console.log(`Disconnected from chat with ${chat.name}`);
+    };
+
+    // Initialize WebSocket connection
+    wsRef.current = initChatWebSocket(
+      otherUserId,
+      handleMessage,
+      handleConnect,
+      handleClose
+    );
+
+    // Clean up on unmount
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.disconnect();
+      }
+    };
+  }, [chat.id, chat.name, chat.userId, user?.id]);
+
+  // Scroll to bottom whenever messages change
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = () => {
     if (inputValue.trim()) {
+      // Create message object for WebSocket
+      const messageData = {
+        content: inputValue,
+      };
+
+      // Send via WebSocket if connected
+      if (wsRef.current && isConnected) {
+        wsRef.current.sendMessage(messageData);
+      }
+
+      // Add to local state for immediate display
+      // The WebSocket response will add the server's version
       setMessages([
         ...messages,
         {
-          id: messages.length + 1,
+          id: Date.now(), // Temporary ID
           sender: "You",
           content: inputValue,
           timestamp: new Date().toLocaleTimeString([], {
@@ -67,6 +174,7 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
           isUser: true,
         },
       ]);
+
       setInputValue("");
     }
   };
@@ -82,11 +190,11 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
     <Paper
       shadow="md"
       radius="md"
-      style={{ 
-        overflow: "hidden", 
+      style={{
+        overflow: "hidden",
         position: "fixed",
         bottom: "0",
-        right: `${320 + position * 340}px`, 
+        right: `${320 + position * 340}px`,
         width: "320px",
         height: "450px",
         zIndex: 1000,
@@ -119,8 +227,12 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
                 right: 0,
                 width: 10,
                 height: 10,
-                backgroundColor: chat.status === "online" ? "#4CAF50" : 
-                                chat.status === "away" ? "#FFC107" : "#9E9E9E",
+                backgroundColor:
+                  chat.status === "online"
+                    ? "#4CAF50"
+                    : chat.status === "away"
+                    ? "#FFC107"
+                    : "#9E9E9E",
                 borderRadius: "50%",
                 border: "2px solid #242f4b",
               }}
@@ -131,8 +243,13 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
               {chat.name}
             </Text>
             <Text size="xs" c="gray.3">
-              {chat.status === "online" ? "Đang hoạt động" : 
-               chat.status === "away" ? "Away" : "Offline"}
+              {isConnected
+                ? chat.status === "online"
+                  ? "Đang hoạt động"
+                  : chat.status === "away"
+                  ? "Away"
+                  : "Offline"
+                : "Connecting..."}
             </Text>
           </Box>
         </Group>
@@ -214,6 +331,7 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
               )}
             </Flex>
           ))}
+          <div ref={messagesEndRef} />
         </Stack>
       </Box>
 
@@ -266,6 +384,7 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
             variant="transparent"
             color="yellow"
             onClick={handleSendMessage}
+            disabled={!isConnected}
           >
             <IconSend size={20} />
           </ActionIcon>

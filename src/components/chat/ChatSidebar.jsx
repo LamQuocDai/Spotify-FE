@@ -14,20 +14,61 @@ import {
 } from "@mantine/core";
 import { IconSearch, IconX, IconMessage } from "@tabler/icons-react";
 
+// Fallback mock users in case no users prop is provided
 const MOCK_USERS = [
-  { id: 1, name: "Try Hard CaoT", status: "online", unread: 4, lastMessage: "Đang hoạt động" },
-  { id: 2, name: "Chong Jong Cho", status: "offline", unread: 0, lastMessage: "tôi đang ở thành máy" },
-  { id: 3, name: "David Miller", status: "online", unread: 2, lastMessage: "Hey, how are you?" },
-  { id: 4, name: "Sarah Johnson", status: "away", unread: 0, lastMessage: "Let's catch up later" },
-  { id: 5, name: "Michael Brown", status: "online", unread: 0, lastMessage: "Thanks for the help!" },
-  { id: 6, name: "Emily Wilson", status: "offline", unread: 0, lastMessage: "See you tomorrow" },
+  {
+    id: 1,
+    name: "Try Hard CaoT",
+    status: "online",
+    unread: 4,
+    lastMessage: "Đang hoạt động",
+  },
+  {
+    id: 2,
+    name: "Chong Jong Cho",
+    status: "offline",
+    unread: 0,
+    lastMessage: "tôi đang ở thành máy",
+  },
+  {
+    id: 3,
+    name: "David Miller",
+    status: "online",
+    unread: 2,
+    lastMessage: "Hey, how are you?",
+  },
+  {
+    id: 4,
+    name: "Sarah Johnson",
+    status: "away",
+    unread: 0,
+    lastMessage: "Let's catch up later",
+  },
+  {
+    id: 5,
+    name: "Michael Brown",
+    status: "online",
+    unread: 0,
+    lastMessage: "Thanks for the help!",
+  },
+  {
+    id: 6,
+    name: "Emily Wilson",
+    status: "offline",
+    unread: 0,
+    lastMessage: "See you tomorrow",
+  },
 ];
 
-export default function ChatSidebar({ isOpen, onClose, onSelectChat }) {
+export default function ChatSidebar({
+  isOpen,
+  onClose,
+  onSelectChat,
+  users = MOCK_USERS,
+}) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(MOCK_USERS);
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -49,8 +90,17 @@ export default function ChatSidebar({ isOpen, onClose, onSelectChat }) {
         backgroundColor: "#242f4b",
       }}
     >
-      <Box p="md" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Title order={4} style={{ color: "white" }}>Messages</Title>
+      <Box
+        p="md"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Title order={4} style={{ color: "white" }}>
+          Messages
+        </Title>
         <ActionIcon onClick={onClose} variant="transparent" color="white">
           <IconX size={20} />
         </ActionIcon>
@@ -78,83 +128,89 @@ export default function ChatSidebar({ isOpen, onClose, onSelectChat }) {
 
       <ScrollArea style={{ flex: 1 }} p="md">
         <Stack gap="sm">
-          {filteredUsers.map((user) => (
-            <Box
-              key={user.id}
-              p="xs"
-              style={{
-                borderRadius: "8px",
-                cursor: "pointer",
-                backgroundColor: "transparent",
-                transition: "background-color 0.2s",
-                position: "relative",
-              }}
-              onClick={() => onSelectChat(user)}
-              _hover={{ backgroundColor: "#3a4257" }}
-            >
-              <Group gap="sm" style={{ position: "relative" }}>
-                <Box style={{ position: "relative" }}>
-                  <Avatar
-                    size="md"
-                    src="/placeholder.svg?height=48&width=48"
-                    alt={`${user.name} avatar`}
-                  />
-                  {user.status === "online" && (
-                    <Box
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <Box
+                key={user.id}
+                p="xs"
+                style={{
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  backgroundColor: "transparent",
+                  transition: "background-color 0.2s",
+                  position: "relative",
+                }}
+                onClick={() => onSelectChat(user)}
+                _hover={{ backgroundColor: "#3a4257" }}
+              >
+                <Group gap="sm" style={{ position: "relative" }}>
+                  <Box style={{ position: "relative" }}>
+                    <Avatar
+                      size="md"
+                      src={user.avatar || "/placeholder.svg?height=48&width=48"}
+                      alt={`${user.name} avatar`}
+                    />
+                    {user.status === "online" && (
+                      <Box
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          right: 0,
+                          width: 12,
+                          height: 12,
+                          backgroundColor: "#4CAF50",
+                          borderRadius: "50%",
+                          border: "2px solid #242f4b",
+                        }}
+                      />
+                    )}
+                    {user.status === "away" && (
+                      <Box
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          right: 0,
+                          width: 12,
+                          height: 12,
+                          backgroundColor: "#FFC107",
+                          borderRadius: "50%",
+                          border: "2px solid #242f4b",
+                        }}
+                      />
+                    )}
+                  </Box>
+                  <Box>
+                    <Text size="sm" fw={600} style={{ color: "white" }}>
+                      {user.name}
+                    </Text>
+                    <Text size="xs" style={{ color: "#9DA7BE" }}>
+                      {user.lastMessage}
+                    </Text>
+                  </Box>
+                  {user.unread > 0 && (
+                    <Badge
+                      color="red"
+                      size="sm"
+                      radius="xl"
                       style={{
                         position: "absolute",
-                        bottom: 0,
                         right: 0,
-                        width: 12,
-                        height: 12,
-                        backgroundColor: "#4CAF50",
-                        borderRadius: "50%",
-                        border: "2px solid #242f4b",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        minWidth: "24px",
                       }}
-                    />
+                    >
+                      {user.unread}
+                    </Badge>
                   )}
-                  {user.status === "away" && (
-                    <Box
-                      style={{
-                        position: "absolute",
-                        bottom: 0,
-                        right: 0,
-                        width: 12,
-                        height: 12,
-                        backgroundColor: "#FFC107",
-                        borderRadius: "50%",
-                        border: "2px solid #242f4b",
-                      }}
-                    />
-                  )}
-                </Box>
-                <Box>
-                  <Text size="sm" fw={600} style={{ color: "white" }}>
-                    {user.name}
-                  </Text>
-                  <Text size="xs" style={{ color: "#9DA7BE" }}>
-                    {user.lastMessage}
-                  </Text>
-                </Box>
-                {user.unread > 0 && (
-                  <Badge
-                    color="red"
-                    size="sm"
-                    radius="xl"
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      minWidth: "24px",
-                    }}
-                  >
-                    {user.unread}
-                  </Badge>
-                )}
-              </Group>
-            </Box>
-          ))}
+                </Group>
+              </Box>
+            ))
+          ) : (
+            <Text size="sm" style={{ color: "white", textAlign: "center" }}>
+              No users match your search
+            </Text>
+          )}
         </Stack>
       </ScrollArea>
     </Paper>

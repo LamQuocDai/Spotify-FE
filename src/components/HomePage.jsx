@@ -17,11 +17,11 @@ const HomePage = () => {
     <div className="flex flex-1 flex-col h-screen bg-black">
       <Header />
       <div className="flex flex-row flex-1 overflow-hidden">
-        <Libraries setCurrentView={setCurrentView} />
+        <Libraries setCurrentView={setCurrentView} currentView={currentView}/>
         {currentView === "main" ? (
           <MainContent/>
         ) : (
-          <MyLibrary playlist={currentView} />
+          <MyLibrary playlist={currentView} setCurrentView={setCurrentView}/>
         )}
         {currentSong && (<SongDescription/>)}
       </div>

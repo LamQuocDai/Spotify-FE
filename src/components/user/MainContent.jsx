@@ -66,11 +66,11 @@ const Articsle = () => {
 
 const MainContent = () => {
     const [trendingSongs, setTrendingSongs] = useState([]);
-
+    
     useEffect(() => {
         const fetchTrendingSongs = async () => {
             try {
-                const response = await getAllSongs();
+                const response = await getAllSongs();                
                 setTrendingSongs(response.data.results);
             } catch (error) {
                 console.error("Error fetching trending songs:", error);

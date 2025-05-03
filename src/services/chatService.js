@@ -1,15 +1,13 @@
 import axiosCustom from "../utils/axiosCustom";
-import { getAccessToken } from "../utils/token";
+import {getAccessToken} from "../utils/token";
 
 // REST API services
 export const getChatsService = async () => {
-  const res = await axiosCustom.get(`/api/chats/`);
-  return res;
+  return await axiosCustom.get(`/api/chats/`);
 };
 
 export const getMessagesService = async (id) => {
-  const res = await axiosCustom.get(`/api/chats/${id}/messages/`);
-  return res;
+  return await axiosCustom.get(`/api/chats/${id}/messages/`);
 };
 
 // WebSocket connection management

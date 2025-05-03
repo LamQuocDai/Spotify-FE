@@ -72,9 +72,19 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
             <div className="flex flex-col">
                 <div className="flex items-end gap-4 p-4 pb-6 bg-gradient-to-b from-[#666666] to-[#595959]">
                     <div className="w-[232px] h-[232px] bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
-                        <IconMusic stroke={2} className="w-24 h-24 text-gray-400" />
+                        {playlist.image ? (
+                            <img
+                                src={playlist.image}
+                                alt={playlist.title}
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
+                                <IconMusic stroke={2} className="w-24 h-24 text-gray-400" />
+                            </div>
+                        )}
                     </div>
-                    <div className="flex flex-col gap-4 cursor-pointer" onClick={() => !playlist.isLikedSong && setIsEditing(true)}>
+                    <div className="flex flex-col gap-4 cursor-pointer" onClick={() => !playlist.is_liked_song && setIsEditing(true)}>
                         <div>
                             <p className="text-sm">Playlist</p>
                             <h1 className="text-5xl font-bold mt-2 cursor-pointer">{playlist.title}</h1>

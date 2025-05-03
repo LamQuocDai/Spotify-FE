@@ -5,19 +5,21 @@ import { IconChevronRight, IconMusic, IconPlayerPlayFilled, IconList, IconDotsVe
 import Song from "./_Song";
 import SearchedArtist from "./_SearchedArtist";
 import SearchedSong from "./_SearchedSong";
+import EditPlaylistForm from "./_EditPlaylistForm";
 import { Icon } from "lucide-react";
 
-const MyLibrary = ({ playlist }) => {
+const MyLibrary = ({ playlist, setCurrentView }) => {
     const [available, setAvailable] = useState(false);
     const [songs, setSongs] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [referesh, setRefresh] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         const fetchSongs = async () => {
             if (!playlist || !playlist.id) return;
-            try {              
+            try {
                 const response = await getSongsFromPlaylistService(playlist.id);
                 setSongs(response.data.songs);
             } catch (error) {
@@ -72,11 +74,12 @@ const MyLibrary = ({ playlist }) => {
                     <div className="w-[232px] h-[232px] bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
                         <IconMusic stroke={2} className="w-24 h-24 text-gray-400" />
                     </div>
-                    <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-4 cursor-pointer" onClick={() => !playlist.isLikedSong && setIsEditing(true)}>
                         <div>
                             <p className="text-sm">Playlist</p>
-                            <h1 className="text-5xl font-bold mt-2">{playlist.title}</h1>
+                            <h1 className="text-5xl font-bold mt-2 cursor-pointer">{playlist.title}</h1>
                         </div>
+                        <h3 className="text-sm text-gray-400">{playlist.description}</h3>
                         <div className="flex items-center gap-2">
                             <img src="/path-to-avatar" alt="User Avatar" className="w-6 h-6 rounded-full" />
                             <span className="text-sm font-semibold">Huỳnh Ngọc Triều</span>
@@ -85,12 +88,13 @@ const MyLibrary = ({ playlist }) => {
                 </div>
                 <div className="flex flex-row justify-between items-center mx-6">
                     <div className="flex flex-row items-center">
-                        {available && (
-                            <div className="mr-4 bg-green-500 rounded-full group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400">
+                        {songs.length > 0 ? (
+                            <div className="mr-4 bg-green-500 cursor-pointer rounded-full group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400">
                                 <IconPlayerPlayFilled className="size-12 p-3 text-black" />
                             </div>
+                        ) : (
+                            <IconDotsVertical stroke={2} className="size-8" />
                         )}
-                        <IconDotsVertical stroke={2} className="size-8" />
                     </div>
                     <div className="flex flex-row items-center py-8">
                         <h3 className="text-md text-gray-300 mr-2">Danh sách</h3>
@@ -127,17 +131,17 @@ const MyLibrary = ({ playlist }) => {
                                 value={searchQuery}
                                 className="w-full bg-[#242424] px-10 py-2 rounded-full text-sm placeholder:text-gray-400"
                             />
-                            <IconSearch className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
+                            <IconSearch className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         </div>
-                        <IconX className="size-6 text-gray-400 cursor-pointer" onClick={removeSearch}/>
+                        <IconX className="size-6 text-gray-400 cursor-pointer" onClick={removeSearch} />
                     </div>
                 </div>
                 {/* Nơi hiện các bài hát để thêm vào play list */}
                 <div className="pb-6 mx-4">
-                    {searchResults.length > 0 &&
-                        searchResults.map((song, index) => <SearchedSong key={index} song={song} playlist={playlist} addSongToPlaylist={addSongToPlaylist} />)}
+                    {searchResults.length > 0 && searchResults.map((song, index) => <SearchedSong key={index} song={song} playlist={playlist} addSongToPlaylist={addSongToPlaylist} />)}
                 </div>
             </div>
+            {isEditing && <EditPlaylistForm playlist={playlist} onClose={() => setIsEditing(false)} setCurrentView={setCurrentView} />}
         </div>
     );
 };

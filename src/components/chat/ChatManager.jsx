@@ -340,7 +340,12 @@ export default function ChatManager() {
       {/* Active Chat Windows */}
       {activeChats.map((chat, index) => (
         <ChatPopup
-          key={chat.id}
+          key={
+            chat.id ||
+            `chat-popup-${index}-${
+              chat.userId || Math.random().toString(36).substr(2, 9)
+            }`
+          }
           chat={chat}
           position={index}
           onClose={() => handleCloseChat(chat.id)}

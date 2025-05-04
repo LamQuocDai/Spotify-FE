@@ -29,90 +29,123 @@ import {
   getMessagesService,
 } from "../../services/chatService";
 import { AuthContext } from "../../context/auth/authContext";
+import { jwtDecode } from "jwt-decode";
 
-export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
+export default function ChatPopup({
+  id,
+  chat,
+  onClose,
+  onMinimize,
+  position = 0,
+}) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isConnected, setIsConnected] = useState(false);
+  const [chatId, setChatId] = useState(chat.chatId || null); // Store actual chat ID
   const wsRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
+  const decodedToken = jwtDecode(token);
+  const userId = decodedToken.user_id;
+  // Add a ref to track sent messages to prevent duplicates
+  const sentMessagesRef = useRef(new Set());
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Load initial messages
+  // Create a chat if needed and load initial messages
   useEffect(() => {
-    const loadMessages = async () => {
+    const initializeChat = async () => {
       try {
-        const response = await getMessagesService(chat.id);
-        if (response && response.data) {
-          // Transform messages to our format
-          const formattedMessages = response.data.map((msg) => ({
-            id: msg.id,
-            sender: msg.user1.id === user?.id ? "You" : msg.user1.username,
-            content: msg.message,
-            timestamp: new Date(msg.created_at).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            isUser: msg.user1.id === user?.id,
-          }));
-          setMessages(formattedMessages);
+        // Get the other user's ID
+        const otherUserId = chat.userId || chat.otherUserId;
+
+        // Load messages directly with the other user's ID
+        try {
+          const response = await getMessagesService(otherUserId);
+          if (response && response.data) {
+            console.log("Loaded messages:", response.data);
+            // Transform messages to our format
+            const formattedMessages = response.data.map((msg) => ({
+              id: msg.id,
+              sender: msg.user1 === userId ? "You" : chat.name,
+              content: msg.message, // Using message instead of content
+              timestamp: new Date(msg.created_at).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              isUser: msg.user1 === userId,
+            }));
+            setMessages(formattedMessages);
+          }
+        } catch (error) {
+          console.error("Failed to load messages:", error);
+          // Fallback to empty messages list
+          setMessages([]);
         }
       } catch (error) {
-        console.error("Failed to load messages:", error);
-        // Fallback mock messages
-        setMessages([
-          {
-            id: 1,
-            sender: chat.name,
-            content: "Hello there!",
-            timestamp: "",
-            isUser: false,
-          },
-          {
-            id: 2,
-            sender: "You",
-            content: "Hi! How are you?",
-            timestamp: "",
-            isUser: true,
-          },
-        ]);
+        console.error("Failed to initialize chat:", error);
+        // Fallback to empty messages list
+        setMessages([]);
       }
     };
 
-    loadMessages();
-  }, [chat.id, user?.id]);
+    initializeChat();
+  }, [chat.id, chat.userId, user?.id, chat.name]);
 
   // Set up websocket connection
   useEffect(() => {
     // Make sure we have a user ID
-    if (!user?.id) {
+    if (!userId) {
       console.warn("User not authenticated, can't establish chat connection");
       return;
     }
 
     // Connect to the other user's chat
-    const otherUserId = chat.userId || chat.id;
+    const otherUserId = chat.userId || chat.otherUserId;
+    console.log(`Attempting to connect to chat with user ID: ${otherUserId}`);
 
     const handleMessage = (data) => {
       // Handle messages received from WebSocket
+      console.log("Received message in popup:", data);
+
+      // Check if the message has the expected structure
       if (data.message) {
+        // Determine if the message is from current user or the other person
+        const isSentByMe = data.sender === userId.toString();
+
+        // Check if this is a message we just sent (to prevent duplication)
+        // We use a combination of sender, content and approximate timestamp to identify duplicates
+        const messageKey = `${data.message}-${Date.now()
+          .toString()
+          .substring(0, 10)}`;
+
+        if (isSentByMe && sentMessagesRef.current.has(messageKey)) {
+          console.log("Ignoring echo of message we just sent:", data.message);
+          return; // Skip this message as we've already added it locally
+        }
+
         const newMessage = {
-          id: Date.now(), // Use timestamp as temporary ID
-          sender: data.sender === user?.id.toString() ? "You" : chat.name,
+          id: data.id || Date.now(),
+          sender: isSentByMe ? "You" : chat.name,
           content: data.message,
-          timestamp: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          isUser: data.sender === user?.id.toString(),
+          timestamp: new Date(data.created_at || Date.now()).toLocaleTimeString(
+            [],
+            {
+              hour: "2-digit",
+              minute: "2-digit",
+            }
+          ),
+          isUser: isSentByMe,
         };
 
         setMessages((prevMessages) => [...prevMessages, newMessage]);
+      } else if (data.type === "connection_status") {
+        console.log("Connection status update:", data.status);
+      } else if (data.error) {
+        console.error("WebSocket error message:", data.error);
       }
     };
 
@@ -121,12 +154,16 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
       console.log(`Connected to chat with ${chat.name}`);
     };
 
-    const handleClose = () => {
+    const handleClose = (event) => {
       setIsConnected(false);
-      console.log(`Disconnected from chat with ${chat.name}`);
+      console.log(
+        `Disconnected from chat with ${chat.name}`,
+        event ? `Code: ${event.code}, Reason: ${event.reason}` : ""
+      );
     };
 
     // Initialize WebSocket connection
+    console.log("Initializing WebSocket connection");
     wsRef.current = initChatWebSocket(
       otherUserId,
       handleMessage,
@@ -136,11 +173,12 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
 
     // Clean up on unmount
     return () => {
+      console.log("Cleaning up WebSocket connection");
       if (wsRef.current) {
         wsRef.current.disconnect();
       }
     };
-  }, [chat.id, chat.name, chat.userId, user?.id]);
+  }, [chat.id, chat.name, chat.userId, userId, chat.otherUserId]);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
@@ -149,33 +187,83 @@ export default function ChatPopup({ chat, onClose, onMinimize, position = 0 }) {
 
   const handleSendMessage = () => {
     if (inputValue.trim()) {
-      // Create message object for WebSocket
-      const messageData = {
-        content: inputValue,
-      };
+      try {
+        // Create a unique key for this message to track it
+        const messageKey = `${inputValue}-${Date.now()
+          .toString()
+          .substring(0, 10)}`;
 
-      // Send via WebSocket if connected
-      if (wsRef.current && isConnected) {
-        wsRef.current.sendMessage(messageData);
+        // Create message object for WebSocket
+        const messageData = {
+          message: inputValue,
+          user1: userId,
+          user2: chat.userId || chat.otherUserId,
+          created_at: new Date().toISOString(),
+        };
+
+        console.log(
+          `Attempting to send message: "${inputValue}" to ${chat.name}`
+        );
+
+        // Send via WebSocket if connected
+        let sent = false;
+        if (wsRef.current && isConnected) {
+          sent = wsRef.current.sendMessage(messageData);
+        }
+
+        if (sent) {
+          // If message was sent successfully via WebSocket, track it to prevent duplicates
+          // when it gets echoed back from the server
+          console.log(
+            "Message sent successfully, tracking to prevent duplication"
+          );
+          sentMessagesRef.current.add(messageKey);
+
+          // Add a cleanup timeout to remove the tracked message after a while
+          setTimeout(() => {
+            sentMessagesRef.current.delete(messageKey);
+          }, 5000); // 5 seconds should be enough for server to echo back
+
+          // Add message locally for immediate feedback
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id: Date.now(),
+              sender: "You",
+              content: inputValue,
+              timestamp: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              isUser: true,
+            },
+          ]);
+        } else {
+          console.warn(
+            "Could not send message via WebSocket, connection may be down"
+          );
+          // If message failed to send via WebSocket, add it to local state
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id: Date.now(),
+              sender: "You",
+              content: inputValue,
+              timestamp: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              isUser: true,
+            },
+          ]);
+          // Optionally implement a fallback REST API call here
+        }
+
+        setInputValue("");
+      } catch (error) {
+        console.error("Error sending message:", error);
+        // Show an error toast or notification here
       }
-
-      // Add to local state for immediate display
-      // The WebSocket response will add the server's version
-      setMessages([
-        ...messages,
-        {
-          id: Date.now(), // Temporary ID
-          sender: "You",
-          content: inputValue,
-          timestamp: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          isUser: true,
-        },
-      ]);
-
-      setInputValue("");
     }
   };
 

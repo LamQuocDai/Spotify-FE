@@ -20,8 +20,12 @@ const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
       try {
         const decodedToken = jwtDecode(token);
-        const res = await getUserService(decodedToken.id);
-        if (res.success) {
+        // Use user_id field from token instead of id
+        const userId = decodedToken.user_id;
+
+        const res = await getUserService(userId);
+
+        if (res.status === 200) {
           setUser(res.data);
         }
       } catch (error) {

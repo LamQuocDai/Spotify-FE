@@ -11,7 +11,8 @@ import {
 } from "@mantine/core";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getSongById, updateSong, getAllGenres } from "../../../../services/SongsService";
+import { getSongById, updateSong } from "../../../../services/SongsService";
+import { getAllGenres } from "../../../../services/genresService";
 import { notifications } from "@mantine/notifications";
 
 const UpdateSongForm = () => {

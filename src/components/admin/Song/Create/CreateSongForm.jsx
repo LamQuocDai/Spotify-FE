@@ -10,7 +10,8 @@ import {
 } from "@mantine/core";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { createSong, getAllGenres } from "../../../../services/SongsService";
+import { createSong } from "../../../../services/SongsService";
+import { getAllGenres } from "../../../../services/genresService";
 import { notifications } from "@mantine/notifications";
 
 const CreateSongForm = () => {

@@ -53,7 +53,3 @@ export const updateSong = async (id, songData, currentUrls) => {
 export const deleteSong = async (id) => {
     return await axiosCustom.delete(`/api/songs/${id}/`);
 };
-
-export const getAllGenres = async () => {
-    return await axiosCustom.get("/api/genres/all/");
-};

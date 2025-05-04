@@ -9,7 +9,11 @@ const SearchedSong = ({ song, playlist, addSongToPlaylist }) => {
         const fetchSongs = async () => {
             if (!playlist || !playlist.id) return;
             try {
-                const response = await getSongsFromPlaylistService(playlist.id);
+                const formData = {
+                    token: localStorage.getItem("access_token")
+                }
+                
+                const response = await getSongsFromPlaylistService(playlist.id, formData);
                 console.log(response.data);
                 
                 setVisible(response.data.songs.some((s) => s.id === song.id));

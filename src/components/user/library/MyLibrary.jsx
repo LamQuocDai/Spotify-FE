@@ -20,7 +20,10 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
         const fetchSongs = async () => {
             if (!playlist || !playlist.id) return;
             try {
-                const response = await getSongsFromPlaylistService(playlist.id);
+                const formData = {
+                    token: localStorage.getItem("access_token")
+                }
+                const response = await getSongsFromPlaylistService(playlist.id, formData);
                 setSongs(response.data.songs);
             } catch (error) {
                 console.error("Error fetching songs:", error);
@@ -53,7 +56,12 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
 
     const addSongToPlaylist = async (songId) => {
         try {
-            await addSongToPlaylistService(playlist.id, songId); // Thêm bài hát vào playlist
+            const formData = {
+                playlist_id: playlist.id,
+                song_id: songId,
+                token: localStorage.getItem("access_token")
+            }
+            await addSongToPlaylistService(formData); // Thêm bài hát vào playlist
             alert("Thêm bài hát vào playlist thành công!");
 
             setRefresh(Date.now()); // Cập nhật lại danh sách bài hát

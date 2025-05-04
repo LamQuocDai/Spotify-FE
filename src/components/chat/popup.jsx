@@ -330,7 +330,7 @@ export default function ChatPopup({
             <Text size="sm" fw={600}>
               {chat.name}
             </Text>
-            <Text size="xs" c="gray.3">
+            {/* <Text size="xs" c="gray.3">
               {isConnected
                 ? chat.status === "online"
                   ? "Đang hoạt động"
@@ -338,17 +338,17 @@ export default function ChatPopup({
                   ? "Away"
                   : "Offline"
                 : "Connecting..."}
-            </Text>
+            </Text> */}
           </Box>
         </Group>
 
         <Group gap="md">
-          <ActionIcon variant="transparent" color="yellow">
+          {/* <ActionIcon variant="transparent" color="yellow">
             <IconPhone size={20} />
           </ActionIcon>
           <ActionIcon variant="transparent" color="white">
             <IconVideo size={20} />
-          </ActionIcon>
+          </ActionIcon> */}
           <ActionIcon variant="transparent" color="white" onClick={onMinimize}>
             <IconMinus size={20} />
           </ActionIcon>
@@ -432,7 +432,7 @@ export default function ChatPopup({
         }}
       >
         <Group gap="xs">
-          <ActionIcon variant="transparent" color="yellow">
+          {/* <ActionIcon variant="transparent" color="yellow">
             <IconMoodSmile size={20} />
           </ActionIcon>
           <ActionIcon variant="transparent" color="yellow">
@@ -443,7 +443,7 @@ export default function ChatPopup({
           </ActionIcon>
           <ActionIcon variant="transparent" color="yellow">
             <IconSquarePlus size={20} />
-          </ActionIcon>
+          </ActionIcon> */}
 
           <TextInput
             placeholder="Aa"
@@ -464,10 +464,10 @@ export default function ChatPopup({
               },
             }}
           />
-
+          {/* 
           <ActionIcon variant="transparent" color="yellow">
             <IconMoon size={20} />
-          </ActionIcon>
+          </ActionIcon> */}
           <ActionIcon
             variant="transparent"
             color="yellow"

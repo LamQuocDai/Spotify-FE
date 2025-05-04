@@ -5,7 +5,7 @@ import { modals } from "@mantine/modals";
 import PlaylistTable from "./PlaylistTable";
 import Search from "../../../utils/search";
 import { useEffect, useState } from "react";
-import { deletePlaylistService, getUserPlaylistService, searchPlaylistsService } from "../../../services/playlistService";
+// import { deletePlaylistService, getUserPlaylistService, searchPlaylistsService } from "../../../services/playlistService";
 
 const Playlist = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +23,7 @@ const Playlist = () => {
         ? await searchPlaylistsService(query, pageNum, size)
         : await getUserPlaylistService(pageNum, size);
       console.log(response.data.playlists);
-      
+
       setPlaylists(response.data.playlists);
       setTotalPages(Math.ceil(response.data.playlists.length / size));
     } catch (e) {
@@ -44,7 +44,8 @@ const Playlist = () => {
         <>
           <Text size="md">Are you sure you want to delete this playlist?</Text>
           <Text mt="sm" c="yellow" fs="italic" size="sm">
-            This action is irreversible and you will have to contact support to restore your data.
+            This action is irreversible and you will have to contact support to
+            restore your data.
           </Text>
         </>
       ),
@@ -81,9 +82,12 @@ const Playlist = () => {
       title: <Text size="xl">Delete Playlists</Text>,
       children: (
         <>
-          <Text size="md">Are you sure you want to delete selected playlists?</Text>
+          <Text size="md">
+            Are you sure you want to delete selected playlists?
+          </Text>
           <Text mt="sm" c="yellow" fs="italic" size="sm">
-            This action is irreversible and you will have to contact support to restore your data.
+            This action is irreversible and you will have to contact support to
+            restore your data.
           </Text>
         </>
       ),
@@ -92,7 +96,9 @@ const Playlist = () => {
       onConfirm: async () => {
         setIsLoading(true);
         try {
-          await Promise.all(selectedPlaylists.map((id) => deletePlaylistService(id)));
+          await Promise.all(
+            selectedPlaylists.map((id) => deletePlaylistService(id))
+          );
           setSelectedPlaylists([]);
           fetchPlaylists();
         } catch (error) {
@@ -105,7 +111,11 @@ const Playlist = () => {
 
   return (
     <>
-      <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: "sm", blur: 2 }} />
+      <LoadingOverlay
+        visible={isLoading}
+        zIndex={1000}
+        overlayProps={{ radius: "sm", blur: 2 }}
+      />
       <Title order={1} mt={32} className="text-[#1db954]">
         Playlists
       </Title>

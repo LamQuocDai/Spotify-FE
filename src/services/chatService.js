@@ -281,7 +281,7 @@ export const createChatService = async (userId) => {
 // New function to search for users to chat with
 export const searchUsersService = async (query) => {
   const res = await axiosCustom.get(
-    `/api/users/search/?q=${encodeURIComponent(query)}`
+    `/api/chats/users/search/?q=${encodeURIComponent(query)}`
   );
   return res;
 };

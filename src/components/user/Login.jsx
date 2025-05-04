@@ -47,21 +47,36 @@ const Login = () => {
       if (res.status === 200) {
         const accessToken = res.data.access;
         saveToken(accessToken);
-        console.log(accessToken);
+
+        // Decode token to get user info
         const decodedToken = jwtDecode(accessToken);
-        const userRole = decodedToken["role"];
-        console.log(userRole);
+        // Use user_id from token instead of id
+        const userId = decodedToken.user_id;
+        const userRole =
+          decodedToken.groups.length === 0
+            ? "user"
+            : decodedToken.groups[0].toLowerCase(); // Assuming role is in the token
+
+        // Since role might not be in the token, we need an alternative approach
+        // You might need to make an additional API call to get user role or
+        // check if there's another field in the token that indicates the role
+
         if (userRole === "admin") {
           navigate("/admin");
-          return;
         } else {
           navigate("/");
-          return;
         }
+
+        return;
       }
       navigate("/login");
     } catch (err) {
-      if (err.detail === "Invalid credentials") {
+      console.error("Login error:", err);
+      if (
+        err.response &&
+        err.response.data &&
+        err.response.data.detail === "Invalid credentials"
+      ) {
         setErrors({
           ...errors,
           general: "Tên người dùng hoặc mật khẩu không đúng.",
@@ -69,7 +84,9 @@ const Login = () => {
       } else {
         setErrors({
           ...errors,
-          general: err.detail || "Đăng nhập thất bại. Vui lòng thử lại.",
+          general:
+            err.response?.data?.detail ||
+            "Đăng nhập thất bại. Vui lòng thử lại.",
         });
       }
     }

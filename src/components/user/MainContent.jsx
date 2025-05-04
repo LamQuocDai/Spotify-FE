@@ -39,8 +39,8 @@ const MainContent = ({ setCurrentView, setListSongsDetail }) => {
             try {
                 const response = await getAllSongs();
                 setAllSongs(response.data.results);
-                const genresResponse = await getAllGenres();
-                setGenres(genresResponse.data);
+                const genresResponse = await getAllGenres();                
+                setGenres(genresResponse.data.results);
             } catch (error) {
                 console.error("Error fetching trending songs:", error);
             }

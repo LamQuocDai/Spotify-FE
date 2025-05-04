@@ -54,10 +54,10 @@ const SignUp = () => {
     let isValid = true;
 
     if (!username.trim()) {
-      newErrors.username = "Tên người dùng không được để trống.";
+      newErrors.username = "Tên đăng nhập không được để trống.";
       isValid = false;
     } else if (username.length < 3) {
-      newErrors.username = "Tên người dùng phải có ít nhất 3 ký tự.";
+      newErrors.username = "Tên đăng nhập phải có ít nhất 3 ký tự.";
       isValid = false;
     }
 

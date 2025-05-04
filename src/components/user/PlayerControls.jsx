@@ -35,22 +35,6 @@ const PlayerControls = () => {
         }
     };
 
-    useEffect(() => {
-        const handleKeyPress = (e) => {
-            if (e.code === "Space" && currentSong) {
-                e.preventDefault();
-                togglePlayPause();
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyPress);
-
-        // Dọn dẹp sự kiện khi component unmount
-        return () => {
-            window.removeEventListener("keydown", handleKeyPress);
-        };
-    }, [currentSong, togglePlayPause]);
-
     return (
         currentSong !== null && (
             <div className="border-t bg-black py-2 items-center border-gray-800 px-4">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAudio } from "../../utils/audioContext";
 import { IconPlayerPlayFilled } from "@tabler/icons-react";
-import { getUserPlaylistService } from "../../services/PlaylistService";
+import { getUserPlaylistService } from "../../services/playlistService";
 
 // ContextMenu component
 const ContextMenu = ({ x, y, song, onClose }) => {

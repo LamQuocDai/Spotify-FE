@@ -9,7 +9,6 @@ export const getChatsService = async () => {
 
 export const getMessagesService = async (id) => {
   return await axiosCustom.get(`/api/chats/${id}/messages/`);
-  return await axiosCustom.get(`/api/chats/${id}/messages/`);
 };
 
 // WebSocket connection management

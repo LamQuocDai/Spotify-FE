@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { AuthContext } from "./authContext";
 import {
-  saveToken as saveTokenUtil,
-  removeToken as removeTokenUtil,
+  saveTokens as saveTokensUtil,
+  removeTokens as removeTokensUtil,
   getAccessToken,
 } from "../../utils/token";
 import { getUserService } from "../../services/UserService";
@@ -36,20 +36,20 @@ const AuthProvider = ({ children }) => {
     if (token) fetchUser();
   }, [token]);
 
-  const saveToken = (data) => {
-    setToken(data);
-    saveTokenUtil(data);
+  const saveTokens = (data) => {
+    setToken(data.access);
+    saveTokensUtil(data);
   };
 
-  const removeToken = () => {
+  const removeTokens = () => {
     setUser(null);
     setToken(null);
-    removeTokenUtil();
+    removeTokensUtil();
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, token, saveToken, removeToken }}
+      value={{ user, setUser, token, saveTokens, removeTokens }}
     >
       {children}
     </AuthContext.Provider>

@@ -9,5 +9,5 @@ export const regiter = async (formData) => {
 };
 
 export const refreshTokenService = async () => {
-  return await axios.post("/api/jwt/token/refresh");
+  return await axiosCustom().post("/api/jwt/token/refresh");
 };

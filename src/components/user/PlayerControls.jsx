@@ -4,7 +4,7 @@ import { useAudio } from "../../utils/audioContext";
 import { formatTime } from "../../utils/timeFormat";
 
 const PlayerControls = () => {
-    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume, currentTime, duration, setPlaybackTime } = useAudio();
+    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume, currentTime, duration, setPlaybackTime, playNextSong } = useAudio();
     const progressRef = useRef(null);
 
     const togglePlayPause = () => {
@@ -72,7 +72,7 @@ const PlayerControls = () => {
                             <button className="rounded-full p-2" onClick={togglePlayPause}>
                                 {isPlaying ? <IconPlayerPauseFilled className="text-white w-6 h-6" /> : <IconPlayerPlayFilled className="text-white w-6 h-6" />}
                             </button>
-                            <IconPlayerSkipForwardFilled className="text-white size-6" />
+                            <IconPlayerSkipForwardFilled className="text-white size-6 cursor-pointer" onClick={playNextSong}/>
                         </div>
                         <div className="w-full flex items-center gap-2">
                             <span className="text-xs text-gray-400">{formatTime(currentTime)}</span>

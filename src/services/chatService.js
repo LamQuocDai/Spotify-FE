@@ -4,11 +4,11 @@ import { jwtDecode } from "jwt-decode";
 
 // REST API services
 export const getChatsService = async () => {
-  const res = await axiosCustom.get(`/api/chats/`);
-  return res;
+  return await axiosCustom.get(`/api/chats/`);
 };
 
 export const getMessagesService = async (id) => {
+  return await axiosCustom.get(`/api/chats/${id}/messages/`);
   return await axiosCustom.get(`/api/chats/${id}/messages/`);
 };
 
@@ -281,7 +281,9 @@ export const createChatService = async (userId) => {
 
 // New function to search for users to chat with
 export const searchUsersService = async (query) => {
-  const res = await axiosCustom.get(`/api/users/search/?q=${encodeURIComponent(query)}`);
+  const res = await axiosCustom.get(
+    `/api/users/search/?q=${encodeURIComponent(query)}`
+  );
   return res;
 };
 

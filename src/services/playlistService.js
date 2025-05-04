@@ -1,31 +1,25 @@
 import axiosCustom from "../utils/axiosCustom";
 
 export const createPlaylistService = async (formData) => {
-  const res = await axiosCustom.post("/playlists/create/", formData);
-  return res;
+  return await axiosCustom.post("/playlists/create/", formData);
 };
 
 export const updatePlaylistService = async (id, formData) => {
-  const res = await axiosCustom.put(`/playlists/${id}/update/`, formData);
-  return res;
+  return await axiosCustom.put(`/playlists/${id}/update/`, formData);
 };
 
 export const deletePlaylistService = async (id) => {
-  const res = await axiosCustom.delete(`/playlists/${id}/delete/`);
-  return res;
+  return await axiosCustom.delete(`/playlists/${id}/delete/`);
 };
 
 export const getPlaylistByIdService = async (id) => {
-  const res = await axiosCustom.get(`/playlists/${id}/`);
-  return res;
+  return await axiosCustom.get(`/playlists/${id}/`);
 };
 
 export const getUserPlaylistService = async () => {
-  const res = await axiosCustom.get("/playlists/");
-  return res;
+  return await axiosCustom.get("/playlists/");
 };
 
-export const searchPlaylistsService = async (query) => {
-  const res = await axiosCustom.get(`/playlists/search/?query=${query}`);
-  return res;
+export const searchPlaylistsService = async (query, page = 1, size = 10) => {
+  return await axiosCustom.get(`/playlists/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${size}`);
 };

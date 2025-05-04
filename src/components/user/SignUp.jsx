@@ -1,6 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { registerUser, socialLogin } from "../../services/authenticateService";
+import { registerUser } from "../../services/authService";
+import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../../context/auth/authContext";
 
 const GOOGLE_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
@@ -15,6 +17,7 @@ const SignUp = () => {
   const [gender, setGender] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({
     username: "",
     email: "",
@@ -27,6 +30,14 @@ const SignUp = () => {
     general: "",
   });
   const navigate = useNavigate();
+  const location = useLocation();
+  const { saveTokens, setUser } = useAuth();
+
+  useEffect(() => {
+    if (location.state?.error) {
+      setErrors((prev) => ({ ...prev, general: location.state.error }));
+    }
+  }, [location]);
 
   const validateForm = () => {
     const newErrors = {
@@ -124,26 +135,66 @@ const SignUp = () => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      const data = await registerUser(
+      const formData = {
         username,
         email,
         password,
         password2,
         phone,
         gender,
-        firstName,
-        lastName
-      );
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
-      const userInfo = {
         first_name: firstName,
-        avatar: data.user?.avatar || null,
+        last_name: lastName,
       };
-      localStorage.setItem("user", JSON.stringify(userInfo));
-      navigate("/");
+      console.log("Sending signup data:", formData);
+
+      const res = await registerUser(formData);
+
+      console.log("Signup response:", res);
+
+      // Kiểm tra phản hồi từ server
+      const { access, refresh, user: userData } = res.data || res;
+
+      // Lưu token
+      saveTokens({ access, refresh });
+
+      // Giải mã token
+      const decodedToken = jwtDecode(access);
+      console.log("Decoded Token:", decodedToken);
+
+      if (!decodedToken.user_id) {
+        console.error("No user_id in JWT token");
+        throw new Error("Invalid JWT: missing user_id");
+      }
+
+      // Tạo đối tượng user
+      const user = {
+        id: decodedToken.user_id || userData?.id || null,
+        first_name:
+          decodedToken.first_name || userData?.first_name || firstName,
+        role: decodedToken.role || userData?.role || "user",
+        avatar:
+          decodedToken.image ||
+          userData?.image ||
+          "https://via.placeholder.com/30",
+        email: decodedToken.email || userData?.email || email,
+      };
+
+      console.log("Saving user to localStorage:", user);
+      setUser(user);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Điều hướng dựa trên vai trò
+      if (decodedToken.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
+      console.error("SignUp Error:", err.response?.data || err.message);
+
       const newErrors = {
         username: "",
         email: "",
@@ -155,23 +206,53 @@ const SignUp = () => {
         lastName: "",
         general: "",
       };
-      if (err.username) newErrors.username = "Tên người dùng đã tồn tại.";
-      if (err.email) newErrors.email = "Email không hợp lệ hoặc đã tồn tại.";
-      if (err.phone)
-        newErrors.phone = "Số điện thoại không hợp lệ hoặc đã tồn tại.";
-      if (err.detail)
-        newErrors.general = err.detail || "Đăng ký thất bại. Vui lòng thử lại.";
+
+      // Xử lý lỗi từ server
+      if (err.response?.data) {
+        Object.entries(err.response.data).forEach(([key, value]) => {
+          const errorMessage = Array.isArray(value) ? value.join(" ") : value;
+          // Ánh xạ first_name và last_name từ server
+          const fieldMap = {
+            first_name: "firstName",
+            last_name: "lastName",
+          };
+          const errorKey = fieldMap[key] || key;
+          if (errorKey in newErrors) {
+            newErrors[errorKey] = errorMessage;
+          } else {
+            newErrors.general = newErrors.general
+              ? `${newErrors.general} ${key}: ${errorMessage}`
+              : `${key}: ${errorMessage}`;
+          }
+        });
+
+        if (!newErrors.general && Object.keys(err.response.data).length > 0) {
+          newErrors.general = "Vui lòng kiểm tra các trường nhập liệu.";
+        }
+      } else {
+        newErrors.general =
+          err.message || "Đăng ký thất bại. Vui lòng thử lại sau.";
+      }
+
       setErrors(newErrors);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignUp = () => {
-    const redirectUri = "http://localhost:5173/auth/callback";
+    if (window.googleSignUpInProgress) return;
+    window.googleSignUpInProgress = true;
+    const redirectUri = `${window.location.origin}/auth/callback`;
     const scope = "email profile";
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&prompt=select_account&provider=google`;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(
+      scope
+    )}&prompt=select_account`;
     window.location.href = url;
+    setTimeout(() => {
+      window.googleSignUpInProgress = false;
+    }, 2000);
   };
-
 
   return (
     <div className="flex flex-1 flex-col w-full overflow-x-hidden items-center min-h-screen pt-10 bg-gradient-to-b from-[#272727] to-[#131313]">
@@ -188,7 +269,12 @@ const SignUp = () => {
           Đăng ký Spotify
         </h1>
 
-        {/* Social Sign Up Buttons */}
+        {errors.general && (
+          <div className="text-red-500 text-center mb-4 px-4 py-2 bg-red-50 rounded-md border border-red-200">
+            {errors.general}
+          </div>
+        )}
+
         <div className="space-y-3">
           <button
             onClick={handleGoogleSignUp}
@@ -212,7 +298,6 @@ const SignUp = () => {
           </div>
         </div>
 
-        {/* Sign Up Form */}
         <form className="space-y-4" onSubmit={handleSignUp}>
           <div className="flex flex-col gap-2 justify-center">
             <label className="block text-white">Tên người dùng</label>
@@ -220,7 +305,9 @@ const SignUp = () => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.username ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               placeholder="Tên người dùng"
               required
             />
@@ -232,7 +319,9 @@ const SignUp = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.email ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               placeholder="Email"
               required
             />
@@ -244,7 +333,9 @@ const SignUp = () => {
               type="text"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.phone ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               placeholder="Số điện thoại"
               required
             />
@@ -255,15 +346,17 @@ const SignUp = () => {
             <select
               value={gender}
               onChange={(e) => setGender(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.gender ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               required
             >
               <option value="" disabled>
                 Chọn giới tính
               </option>
-              <option value="1">Nam</option>
-              <option value="2">Nữ</option>
-              <option value="3">Khác</option>
+              <option value="0">Nam</option>
+              <option value="1">Nữ</option>
+              <option value="2">Khác</option>
             </select>
             {errors.gender && (
               <div className="text-red-500 text-sm">{errors.gender}</div>
@@ -273,7 +366,9 @@ const SignUp = () => {
               type="text"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.firstName ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               placeholder="Tên"
               required
             />
@@ -285,7 +380,9 @@ const SignUp = () => {
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.lastName ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               placeholder="Họ"
               required
             />
@@ -297,7 +394,9 @@ const SignUp = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.password ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               placeholder="Mật khẩu"
               required
             />
@@ -309,7 +408,9 @@ const SignUp = () => {
               type="password"
               value={password2}
               onChange={(e) => setPassword2(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.password2 ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               placeholder="Xác nhận mật khẩu"
               required
             />
@@ -318,19 +419,41 @@ const SignUp = () => {
             )}
           </div>
 
-          {errors.general && (
-            <div className="text-red-500 text-center">{errors.general}</div>
-          )}
-
           <button
             type="submit"
-            className="w-full bg-[#1ed760] text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform"
+            disabled={isSubmitting}
+            className={`w-full ${
+              isSubmitting ? "bg-green-700" : "bg-[#1ed760] hover:scale-105"
+            } text-black font-bold py-3 px-8 rounded-full transition-transform flex justify-center items-center`}
           >
-            Đăng ký
+            {isSubmitting ? (
+              <span className="flex items-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-black"
+                  viewBox="0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+                Đang xử lý...
+              </span>
+            ) : (
+              "Đăng ký"
+            )}
           </button>
         </form>
 
-        {/* Login Link */}
         <div className="mt-8 text-center">
           <p className="text-gray-400">
             Bạn đã có tài khoản?{" "}

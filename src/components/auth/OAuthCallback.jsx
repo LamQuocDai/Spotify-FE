@@ -1,82 +1,129 @@
 import { useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { socialLogin } from "../../services/authenticateService";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { socialLogin } from "../../services/authService";
+import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../../context/auth/authContext";
 
 const OAuthCallback = () => {
-  const location = useLocation();
-  const isProcessed = useRef(false);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { saveTokens } = useAuth();
+  const hasRun = useRef(false);
 
   useEffect(() => {
-    console.log("OAuthCallback useEffect triggered");
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const handleCallback = async () => {
-      if (isProcessed.current) {
-        console.log("Request already processed, skipping...");
+      const code = searchParams.get("code");
+      const error = searchParams.get("error");
+
+      if (error) {
+        console.error("Google OAuth Error:", error);
+        navigate("/login", { state: { error: "Google login failed" } });
         return;
       }
-      isProcessed.current = true;
-      console.log("Processing new social login request");
-
-      const params = new URLSearchParams(location.search);
-      const code = params.get("code");
-      const provider = params.get("provider") || "google";
-      const state = params.get("state");
-
-      console.log("OAuth Callback:", { code, provider, state, url: location.search });
 
       if (!code) {
-        console.error("Missing authorization code in callback URL");
-        console.log("Redirecting to /login due to missing code...");
-        window.location.replace("/login?error=invalid_auth");
+        console.error("No authorization code provided");
+        navigate("/login", {
+          state: { error: "No authorization code provided" },
+        });
         return;
       }
 
       try {
-        console.log("Calling socialLogin with code:", code?.slice(0, 10) + "...");
-        const response = await socialLogin(code, provider);
-        console.log("Backend Response:", JSON.stringify(response, null, 2));
+        console.log("Sending code to socialLogin:", code);
+        const response = await socialLogin(code, "google");
+        console.log("Full API Response:", response);
+        console.log("Response Data:", response.data);
 
-        // Validate response
-        const { user, access, refresh } = response;
-        if (!user || !access || !refresh) {
-          throw new Error(`Invalid response: Missing ${!user ? 'user' : !access ? 'access' : 'refresh'} field`);
+        if (!response.data) {
+          throw new Error("Empty response data from socialLogin API");
         }
 
-        // Store tokens and user data (match Login.jsx logic)
-        localStorage.setItem("access_token", access);
-        localStorage.setItem("refresh_token", refresh);
-        const userInfo = {
-          first_name: user.first_name || user.username || "User",
-          avatar: user.image || null,
+        const { access, refresh, user: userData } = response.data;
+        if (!access || !refresh) {
+          throw new Error("Missing access or refresh token in response");
+        }
+
+        console.log("Saving tokens:", { access, refresh });
+        saveTokens({ access, refresh });
+
+        console.log("Decoding access token:", access);
+        const decodedToken = jwtDecode(access);
+        console.log("Decoded Token:", decodedToken);
+
+        const user = {
+          id: decodedToken.user_id || null,
+          first_name:
+            decodedToken.first_name ||
+            decodedToken.username ||
+            userData.first_name ||
+            "Unknown",
+          role: decodedToken.role || userData.role || "user",
+          avatar:
+            decodedToken.image ||
+            userData.image ||
+            "https://via.placeholder.com/30",
+          email: decodedToken.email || userData.email || "",
         };
-        localStorage.setItem("user", JSON.stringify(userInfo));
+        console.log("Saving user to localStorage:", user);
+        localStorage.setItem("user", JSON.stringify(user));
 
-        console.log("Stored in localStorage:", {
-          access_token: access.slice(0, 10) + "...",
-          refresh_token: refresh.slice(0, 10) + "...",
-          user: userInfo,
+        if (decodedToken.role === "admin") {
+          console.log("Navigating to /admin");
+          navigate("/admin", { replace: true });
+        } else {
+          console.log("Navigating to /");
+          navigate("/", { replace: true });
+        }
+      } catch (err) {
+        console.error("OAuthCallback Error:", err);
+        navigate("/login", {
+          state: {
+            error:
+              err.message ||
+              err.response?.data?.detail ||
+              "Google login failed",
+          },
         });
-
-        // Immediate redirect to homepage
-        console.log("Redirecting to homepage with window.location.replace...");
-        window.location.replace("/");
-      } catch (error) {
-        console.error("Error during social login:", {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-        });
-        console.log("Redirecting to /login due to error...");
-        window.location.replace("/login?error=login_failed");
       }
     };
 
     handleCallback();
-  }, [location]);
+  }, [searchParams, navigate, saveTokens]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#121212] text-white">
-      <div className="w-12 h-12 border-4 border-t-[#1ed760] border-gray-500 rounded-full animate-spin"></div>
-      <p className="mt-4">Đang xử lý đăng nhập...</p>
+    <div className="flex flex-1 flex-col w-full overflow-x-hidden items-center min-h-screen pt-10 bg-gradient-to-b from-[#272727] to-[#131313]">
+      <div className="bg-[#121212] w-full max-w-[734px] flex flex-col items-center justify-center rounded-lg px-10 py-20">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 relative">
+            <div className="absolute inset-0 border-4 border-t-[#1ed760] border-[#b3b3b3] rounded-full animate-spin"></div>
+          </div>
+          <span className="text-white text-lg font-medium animate-pulse">
+            Đang xử lý...
+          </span>
+        </div>
+      </div>
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          .animate-spin {
+            animation: spin 1s linear infinite;
+          }
+          .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+        `}
+      </style>
     </div>
   );
 };

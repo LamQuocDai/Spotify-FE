@@ -1,9 +1,8 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { loginUser } from "../../services/authenticateService";
 import { login } from "../../services/authService";
-import { saveToken } from "../../utils/token";
 import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../../context/auth/authContext";
 
 const GOOGLE_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
@@ -12,6 +11,7 @@ const GOOGLE_CLIENT_ID =
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({
     username: "",
     password: "",
@@ -19,9 +19,9 @@ const Login = () => {
   });
   const navigate = useNavigate();
   const location = useLocation();
+  const { saveTokens, setUser } = useAuth();
 
   useEffect(() => {
-    // Display error from OAuthCallback redirect
     if (location.state?.error) {
       setErrors((prev) => ({ ...prev, general: location.state.error }));
     }
@@ -44,6 +44,7 @@ const Login = () => {
     setErrors(newErrors);
     return isValid;
   };
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -53,46 +54,80 @@ const Login = () => {
       return;
     }
 
-    try {
-      // Handle login logic here
-      const res = await login(username, password);
+    setIsSubmitting(true);
 
-      if (res.status === 200) {
-        const accessToken = res.data.access;
-        saveToken(accessToken);
-        console.log(accessToken);
-        const decodedToken = jwtDecode(accessToken);
-        const userRole = decodedToken["role"];
-        console.log(userRole);
-        if (userRole === "admin") {
-          navigate("/admin");
-          return;
-        } else {
-          navigate("/");
-          return;
-        }
+    try {
+      const res = await login(username, password);
+      console.log("Login response:", res);
+
+      const { access, refresh } = res.data;
+
+      // Lưu token
+      saveTokens({ access, refresh });
+
+      // Giải mã token
+      const decodedToken = jwtDecode(access);
+      console.log("Decoded Token:", decodedToken);
+
+      if (!decodedToken.user_id) {
+        console.error("No user_id in JWT token");
+        throw new Error("Invalid JWT: missing user_id");
       }
-      navigate("/login");
-    } catch (err) {
-      if (err.detail === "Invalid credentials") {
-        setErrors({
-          ...errors,
-          general: "Tên người dùng hoặc mật khẩu không đúng.",
-        });
+
+      const user = {
+        id: decodedToken.user_id,
+        first_name: decodedToken.first_name || username,
+        role: decodedToken.role || "user",
+        avatar: decodedToken.avatar || "https://via.placeholder.com/30",
+        email: decodedToken.email || "",
+      };
+
+      setUser(user);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      if (decodedToken.role === "admin") {
+        navigate("/admin", { replace: true });
       } else {
-        setErrors({
-          ...errors,
-          general: err.detail || "Đăng nhập thất bại. Vui lòng thử lại.",
-        });
+        navigate("/", { replace: true });
       }
+    } catch (err) {
+      console.error("Login Error:", err.response?.data || err.message);
+
+      const newErrors = { username: "", password: "", general: "" };
+
+      if (err.response?.data) {
+        if (
+          err.response.data.detail ===
+          "No active account found with the given credentials"
+        ) {
+          newErrors.general = "Tên người dùng hoặc mật khẩu không đúng.";
+        } else {
+          newErrors.general =
+            err.response.data.detail || "Đăng nhập thất bại. Vui lòng thử lại.";
+        }
+      } else {
+        newErrors.general =
+          err.message || "Đăng nhập thất bại. Vui lòng thử lại.";
+      }
+
+      setErrors(newErrors);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    const redirectUri = "http://localhost:5173/auth/callback";
+    if (window.googleLoginInProgress) return;
+    window.googleLoginInProgress = true;
+    const redirectUri = `${window.location.origin}/auth/callback`;
     const scope = "email profile";
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&prompt=select_account&provider=google`;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${encodeURIComponent(
+      scope
+    )}&prompt=select_account`;
     window.location.href = url;
+    setTimeout(() => {
+      window.googleLoginInProgress = false;
+    }, 2000);
   };
 
   return (
@@ -110,12 +145,12 @@ const Login = () => {
           Đăng nhập vào Spotify
         </h1>
 
-        {/* Display General Error */}
         {errors.general && (
-          <div className="text-red-500 text-center mb-4">{errors.general}</div>
+          <div className="text-red-500 text-center mb-4 px-4 py-2 bg-red-50 rounded-md border border-red-200">
+            {errors.general}
+          </div>
         )}
 
-        {/* Social Login Buttons */}
         <div className="space-y-3">
           <button
             onClick={handleGoogleLogin}
@@ -139,16 +174,19 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Login Form */}
         <form className="space-y-4" onSubmit={handleLogin}>
           <div className="flex flex-col gap-2 justify-center">
-            <label className="block text-white">Tên người dùng</label>
+            <label className="block text-white">
+              Tên người dùng hoặc Email
+            </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
-              placeholder="Tên người dùng"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.username ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
+              placeholder="Tên người dùng hoặc Email"
               required
             />
             {errors.username && (
@@ -159,7 +197,9 @@ const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border border-gray-500 focus:border-white focus:outline-none"
+              className={`w-[330px] p-3 bg-[#242424] text-white rounded-[4px] border ${
+                errors.password ? "border-red-500" : "border-gray-500"
+              } focus:border-white focus:outline-none`}
               placeholder="Mật khẩu"
               required
             />
@@ -170,13 +210,39 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#1ed760] text-black font-bold py-3 px-8 rounded-full hover:scale-105 transition-transform"
+            disabled={isSubmitting}
+            className={`w-full ${
+              isSubmitting ? "bg-green-700" : "bg-[#1ed760] hover:scale-105"
+            } text-black font-bold py-3 px-8 rounded-full transition-transform flex justify-center items-center`}
           >
-            Đăng nhập
+            {isSubmitting ? (
+              <span className="flex items-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-3 text-black"
+                  viewBox="0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+                Đang xử lý...
+              </span>
+            ) : (
+              "Đăng nhập"
+            )}
           </button>
         </form>
 
-        {/* Sign Up Link */}
         <div className="mt-8 text-center">
           <p className="text-gray-400">
             Bạn chưa có tài khoản?{" "}

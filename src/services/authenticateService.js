@@ -56,6 +56,7 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Hàm đăng nhập
 export const loginUser = async (username, password) => {
   try {
     const response = await apiClient.post("/users/login/", {
@@ -102,9 +103,17 @@ export const registerUser = async (
 };
 
 export const socialLogin = async (code, provider) => {
-  console.log(`Attempting ${provider} login with code: ${code.substring(0, 10)}...`);
+  console.log(
+    `Attempting ${provider} login with code: ${code.substring(0, 10)}...`
+  );
 
   try {
+    // Log the request details for debugging
+    console.log(
+      `Sending request to: ${apiClient.defaults.baseURL}/users/social-login/`
+    );
+    console.log(`Request data:`, { code, provider });
+
     const response = await apiClient.post("/users/social-login/", {
       code,
       provider,
@@ -117,6 +126,7 @@ export const socialLogin = async (code, provider) => {
 
     return response.data;
   } catch (error) {
+    // Enhanced error logging
     const errorDetails = {
       message: error.message,
       status: error.response?.status,
@@ -134,9 +144,14 @@ export const socialLogin = async (code, provider) => {
     };
     console.error(`${provider} login error:`, errorDetails);
 
-    throw error.response?.data || {
-      detail: `Đăng nhập ${provider} thất bại.`,
-    };
+    // Throw a more detailed error
+    throw new Error(
+      JSON.stringify({
+        detail: error.response?.data?.detail || `Đăng nhập ${provider} thất bại.`,
+        status: error.response?.status,
+        data: error.response?.data,
+      })
+    );
   }
 };
 

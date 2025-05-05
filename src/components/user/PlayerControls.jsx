@@ -15,7 +15,7 @@ import { useAudio } from "../../utils/audioContext";
 import { formatTime } from "../../utils/timeFormat";
 
 const PlayerControls = () => {
-    const { currentSong, audio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume, currentTime, duration, setPlaybackTime, playNextSong, setSongDescriptionAvailable } = useAudio();
+    const { currentSong, audio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume, currentTime, duration, setPlaybackTime, playNextSong, setSongDescriptionAvailable, playBackSong } = useAudio();
     const progressRef = useRef(null);
 
     const togglePlayPause = () => {
@@ -67,7 +67,7 @@ const PlayerControls = () => {
                     {/* Playback Controls */}
                     <div className="flex flex-col items-center w-1/2">
                         <div className="flex items-center gap-4 mb-2">
-                            <IconPlayerSkipBackFilled stroke={2} className="cursor-pointer text-white size-6" />
+                            <IconPlayerSkipBackFilled stroke={2} className="cursor-pointer text-white size-6" onClick={playBackSong}/>
                             <button className="rounded-full p-2" onClick={togglePlayPause}>
                                 {isPlaying ? <IconPlayerPauseFilled className="text-white w-6 h-6" /> : <IconPlayerPlayFilled className="text-white w-6 h-6" />}
                             </button>

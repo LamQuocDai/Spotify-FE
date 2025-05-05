@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "./user/Header.jsx";
 import Libraries from "./user/library/Libraries.jsx";
 import MainContent from "./user/MainContent.jsx";
@@ -12,15 +12,15 @@ import ListSongs from "./user/ListSongs.jsx";
 const HomePage = () => {
     const [currentView, setCurrentView] = useState("main");
     const [listSongsDetail, setListSongsDetail] = useState([]);
-    const { currentSong } = useAudio();
+    const { currentSong, songDescriptionAvailable } = useAudio();
 
     return (
         <div className="flex flex-1 flex-col h-screen bg-black">
-            <Header setCurrentView={setCurrentView}/>
+            <Header setCurrentView={setCurrentView} setListSongsDetail={setListSongsDetail}/>
             <div className="flex flex-row flex-1 overflow-hidden">
                 <Libraries setCurrentView={setCurrentView} currentView={currentView} />
                 {currentView === "main" ? <MainContent setCurrentView={setCurrentView} setListSongsDetail={setListSongsDetail} /> : currentView === "listSongs" ? <ListSongs listSongs={listSongsDetail}/> : <MyLibrary playlist={currentView} setCurrentView={setCurrentView} />}
-                {currentSong && <SongDescription />}
+                {songDescriptionAvailable && <SongDescription />}
             </div>
             {currentSong && <PlayerControls />}
             <ChatManager />

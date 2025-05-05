@@ -15,6 +15,7 @@ export const AudioProvider = ({ children }) => {
   // Thêm state cho playlist và chỉ số bài hát hiện tại
   const [playlist, setPlaylist] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(-1);
+  const [songDescriptionAvailable, setSongDescriptionAvailable] = useState(false);
 
   // Hàm để phát/tạm dừng bài hát
   const togglePlay = () => {
@@ -52,6 +53,7 @@ export const AudioProvider = ({ children }) => {
 
   // Hàm để thêm danh sách bài hát
   const setNewPlaylist = (newPlaylist, startIndex = 0) => {
+    setSongDescriptionAvailable(true)
     if (audio) {
       audio.pause(); // Dừng bài hát hiện tại
       setIsPlaying(false); // Cập nhật trạng thái phát
@@ -136,6 +138,8 @@ export const AudioProvider = ({ children }) => {
         setNewPlaylist,
         currentSongIndex,
         playNextSong,
+        songDescriptionAvailable,
+        setSongDescriptionAvailable
       }}
     >
       {children}

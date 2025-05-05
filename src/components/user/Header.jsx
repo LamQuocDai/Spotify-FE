@@ -7,7 +7,7 @@ import {
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const Header = () => {
+const Header = ({setCurrentView}) => {
   const navigate = useNavigate();
   const reloadPage = () => {
     window.location.reload();
@@ -40,12 +40,12 @@ const Header = () => {
         <img
           className="h-14 cursor-pointer"
           src="https://getheavy.com/wp-content/uploads/2019/12/spotify2019-830x350.jpg"
-          onClick={() => reloadPage()}
+          onClick={() => setCurrentView("main")}
         />
         <IconHome
           stroke={2}
           className="mx-2 bg-[#272727] cursor-pointer size-11 border-none bg p-2 rounded-full"
-          onClick={() => reloadPage()}
+          onClick={() => setCurrentView("main")}
         />
 
         <div className="flex flex-1 flex-row bg-[#272727] px-4 py-2 items-center rounded-full">

@@ -16,7 +16,7 @@ const HomePage = () => {
 
     return (
         <div className="flex flex-1 flex-col h-screen bg-black">
-            <Header />
+            <Header setCurrentView={setCurrentView}/>
             <div className="flex flex-row flex-1 overflow-hidden">
                 <Libraries setCurrentView={setCurrentView} currentView={currentView} />
                 {currentView === "main" ? <MainContent setCurrentView={setCurrentView} setListSongsDetail={setListSongsDetail} /> : currentView === "listSongs" ? <ListSongs listSongs={listSongsDetail}/> : <MyLibrary playlist={currentView} setCurrentView={setCurrentView} />}

@@ -7,6 +7,7 @@ import SearchedArtist from "./_SearchedArtist";
 import SearchedSong from "./_SearchedSong";
 import EditPlaylistForm from "./_EditPlaylistForm";
 import { Icon } from "lucide-react";
+import { usePlayList } from "../../../utils/playlistContext";
 
 const MyLibrary = ({ playlist, setCurrentView }) => {
     const [available, setAvailable] = useState(false);
@@ -15,14 +16,15 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
     const [searchResults, setSearchResults] = useState([]);
     const [referesh, setRefresh] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const { playlists, setPlaylists, refreshKeyPlayLists,setRefreshKeyPlayLists } = usePlayList();
 
     useEffect(() => {
         const fetchSongs = async () => {
             if (!playlist || !playlist.id) return;
             try {
                 const formData = {
-                    token: localStorage.getItem("access_token")
-                }
+                    token: localStorage.getItem("access_token"),
+                };
                 const response = await getSongsFromPlaylistService(playlist.id, formData);
                 setSongs(response.data.songs);
             } catch (error) {
@@ -48,7 +50,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
     const deleteSong = async (songId) => {
         try {
             await deleteSongFromPlaylistService(playlist.id, songId);
-            setRefresh(Date.now());
+            setRefreshKeyPlayLists(Date.now());
         } catch (error) {
             console.error("Lỗi khi xóa bài hát:", error);
         }
@@ -59,12 +61,13 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
             const formData = {
                 playlist_id: playlist.id,
                 song_id: songId,
-                token: localStorage.getItem("access_token")
-            }
+                token: localStorage.getItem("access_token"),
+            };
             await addSongToPlaylistService(formData); // Thêm bài hát vào playlist
             alert("Thêm bài hát vào playlist thành công!");
 
             setRefresh(Date.now()); // Cập nhật lại danh sách bài hát
+            setRefreshKeyPlayLists(Date.now())
         } catch (error) {
             console.error("Error adding song to playlist:", error);
         }
@@ -76,16 +79,12 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
     };
 
     return (
-        <div className="bg-[#131313] text-white h-[88vh] flex-1 mr-2 rounded-lg overflow-y-auto">
+        <div className="bg-[#131313] text-white flex-1 mr-2 rounded-lg overflow-y-auto">
             <div className="flex flex-col">
                 <div className="flex items-end gap-4 p-4 pb-6 bg-gradient-to-b from-[#666666] to-[#595959]">
                     <div className="w-[232px] h-[232px] bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
                         {playlist.image ? (
-                            <img
-                                src={playlist.image}
-                                alt={playlist.title}
-                                className="w-full h-full object-cover"
-                            />
+                            <img src={playlist.image} alt={playlist.title} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
                                 <IconMusic stroke={2} className="w-24 h-24 text-gray-400" />

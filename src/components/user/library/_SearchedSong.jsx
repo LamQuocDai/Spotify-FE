@@ -13,9 +13,7 @@ const SearchedSong = ({ song, playlist, addSongToPlaylist }) => {
                     token: localStorage.getItem("access_token")
                 }
                 
-                const response = await getSongsFromPlaylistService(playlist.id, formData);
-                console.log(response.data);
-                
+                const response = await getSongsFromPlaylistService(playlist.id, formData);                
                 setVisible(response.data.songs.some((s) => s.id === song.id));
             } catch (error) {
                 console.error("Error fetching songs:", error);

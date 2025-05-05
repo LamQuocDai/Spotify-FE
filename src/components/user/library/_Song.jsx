@@ -1,37 +1,10 @@
 import { useState, useEffect } from "react";
 import { deleteSongFromPlaylistService } from "../../../services/SongPlaylistService";
 import { useAudio } from "../../../utils/audioContext";
+import ContextMenu from "./_ContextMenu";
 
-const ContextMenu = ({ x, y, deleteSong, song, onClose }) => {
-    return (
-        <div
-            className="absolute bg-[#242424] rounded-md shadow-lg border border-gray-700 z-50"
-            style={{ top: y, left: x }}
-            onClick={(e) => e.stopPropagation()}
-        >
-            <button
-                className="block w-full text-left px-4 py-2 text-white hover:bg-white/10"
-                onClick={() => {
-                    onAdd();
-                    onClose();
-                }}
-            >
-                Thêm vào danh sách phát
-            </button>
-            <button
-                className="block w-full text-left px-4 py-2 text-white hover:bg-white/10"
-                onClick={() => {
-                    deleteSong(song.id);
-                    onClose();
-                }}
-            >
-                Xóa khỏi danh sách phát
-            </button>
-        </div>
-    );
-};
 
-const Song = ({ song, playlist, deleteSong, songs,index }) => {
+const Song = ({ song, playlist, deleteSong, songs, index }) => {
     const [contextMenu, setContextMenu] = useState(null);
     const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, volume, setNewPlaylist } = useAudio();
 

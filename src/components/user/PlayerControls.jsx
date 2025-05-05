@@ -61,7 +61,6 @@ const PlayerControls = () => {
                             <h4 className="text-white text-sm">{currentSong.song_name}</h4>
                             <p className="text-xs text-gray-400">{currentSong.singer_name}</p>
                         </div>
-                        <IconCirclePlus stroke={2} className="ml-2 text-white cursor-pointer size-5" />
                     </div>
 
                     {/* Playback Controls */}

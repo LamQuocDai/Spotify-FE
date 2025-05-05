@@ -108,7 +108,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
     try {
       const response = await createPlaylistService(formData);
       setPlaylists([
-        ...playlists,
+        ...playlists1,
         {
           id: response.data.id,
           title: response.data.title,

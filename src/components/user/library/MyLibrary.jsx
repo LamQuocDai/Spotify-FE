@@ -3,11 +3,11 @@ import { searchSongs } from "../../../services/SongsService";
 import { getSongsFromPlaylistService, deleteSongFromPlaylistService, addSongToPlaylistService } from "../../../services/SongPlaylistService";
 import { IconChevronRight, IconMusic, IconPlayerPlayFilled, IconList, IconDotsVertical, IconClockHour3, IconSearch, IconX } from "@tabler/icons-react";
 import Song from "./_Song";
-import SearchedArtist from "./_SearchedArtist";
 import SearchedSong from "./_SearchedSong";
 import EditPlaylistForm from "./_EditPlaylistForm";
-import { Icon } from "lucide-react";
 import { usePlayList } from "../../../utils/playlistContext";
+import { IconTrash } from "@tabler/icons-react";
+import { deletePlaylistService } from "../../../services/playlistService";
 
 const MyLibrary = ({ playlist, setCurrentView }) => {
     const [available, setAvailable] = useState(false);
@@ -87,6 +87,25 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
         setSearchQuery("");
     };
 
+    const handleRemove = async () => {
+        try {
+            const isConfirmed = confirm("Bạn có chắc chắn xóa danh sách này không?");
+            if (isConfirmed) {
+                const formData = {
+                    token: localStorage.getItem("access_token")
+                }
+                await deletePlaylistService(playlist.id, formData);
+                
+                alert("Xóa thành công");
+                setRefreshKeyPlayLists(Date.now());
+                setCurrentView("main")
+            }
+        } catch (error) {
+            console.error("Error deleting playlist:", error);
+            alert("Đã xảy ra lỗi khi xóa danh sách");
+        }
+    };
+
     return (
         <div className="bg-[#131313] text-white flex-1 mr-2 rounded-lg overflow-y-auto">
             <div className="flex flex-col">
@@ -102,7 +121,6 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
                     </div>
                     <div className="flex flex-col gap-4 cursor-pointer" onClick={() => !playlist.is_liked_song && setIsEditing(true)}>
                         <div>
-                            <p className="text-sm">Playlist</p>
                             <h1 className="text-5xl font-bold mt-2 cursor-pointer">{playlist.title}</h1>
                         </div>
                         <h3 className="text-sm text-gray-400">{playlist.description}</h3>
@@ -112,6 +130,9 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
                                 <span className="text-sm font-semibold">{user.first_name}</span>
                             </div>
                         )}
+                    </div>
+                    <div className="flex flex-1 justify-end">
+                        <IconTrash stroke={2} className="cursor-pointer" onClick={handleRemove} />
                     </div>
                 </div>
                 <div className="flex flex-row justify-between items-center mx-6">

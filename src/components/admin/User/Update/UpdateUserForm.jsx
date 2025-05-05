@@ -59,7 +59,7 @@ const UpdateUserForm = () => {
 
         if (userData) {
           setFormData({
-            username: userData.name || "",
+            username: userData.username || "",
             email: userData.email || "",
             phone: userData.phone || "",
             gender: userData.gender ? String(userData.gender) : "",
@@ -210,6 +210,7 @@ const UpdateUserForm = () => {
         <form onSubmit={handleSubmit}>
           <Flex direction="column" gap={20}>
             <TextInput
+              disabled={true}
               label="Username"
               size="md"
               placeholder="Enter username"

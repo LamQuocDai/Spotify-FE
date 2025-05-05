@@ -45,7 +45,7 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
         confirmPassword: "",
       });
 
-      setPreviewImage(user.avatar || null);
+      setPreviewImage(user.image || null);
     }
 
     // If we have a user ID, fetch full user data
@@ -66,11 +66,8 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
             lastName: userData.last_name || user.last_name || "",
             gender: userData.gender ? String(userData.gender) : "",
             // Keep password fields empty
+            image: userData.image || user.image || null,
           }));
-
-          if (userData.avatar) {
-            setPreviewImage(userData.avatar);
-          }
         } catch (error) {
           console.error("Error fetching user details:", error);
           setErrors({
@@ -104,14 +101,14 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setFormData({
-        ...formData,
-        image: file,
-      });
-
       const reader = new FileReader();
       reader.onload = () => {
-        setPreviewImage(reader.result);
+        const imageUrl = reader.result;
+        setPreviewImage(imageUrl);
+        setFormData({
+          ...formData,
+          image: imageUrl, // Store the image URL string instead of the file object
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -159,26 +156,22 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
 
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("first_name", formData.firstName);
-      formDataToSend.append("last_name", formData.lastName || "");
+      formDataToSend.append("username", formData.username);
       formDataToSend.append("email", formData.email || "");
       formDataToSend.append("phone", formData.phone || "");
       formDataToSend.append("gender", formData.gender || "");
 
       // Only include password fields if the user is updating their password
       if (formData.newPassword) {
-        formDataToSend.append("current_password", formData.currentPassword);
-        formDataToSend.append("new_password", formData.newPassword);
+        formDataToSend.append("password", formData.newPassword);
       }
 
-      // Append image if selected
+      // Send image as URL string instead of file object
       if (formData.image) {
-        formDataToSend.append("avatar", formData.image);
+        formDataToSend.append("image", formData.image);
       }
 
-      const response = await updateUserService(user.id, formDataToSend);
-
-      setSuccessMessage("Cập nhật thông tin thành công!");
+      await updateUserService(user.id, formDataToSend);
 
       // Update local storage user data
       const updatedUser = {
@@ -190,9 +183,9 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
         phone: formData.phone,
       };
 
-      // Only update avatar in local storage if a new image was uploaded
-      if (previewImage && formData.image) {
-        updatedUser.avatar = previewImage;
+      // Update the image in localStorage with the image string URL
+      if (formData.image) {
+        updatedUser.image = formData.image;
       }
 
       localStorage.setItem("user", JSON.stringify(updatedUser));

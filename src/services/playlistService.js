@@ -9,7 +9,7 @@ export const updatePlaylistService = async (id, formData) => {
 };
 
 export const deletePlaylistService = async (id, formData) => {
-  return await axiosCustom.delete(`/playlists/${id}/delete/`, formData);
+  return await axiosCustom.delete(`/playlists/${id}/delete/`, { params: formData });
 };
 
 export const getPlaylistByIdService = async (id) => {

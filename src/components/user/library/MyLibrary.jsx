@@ -65,6 +65,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
             }            
             await deleteSongFromPlaylistService(playlist.id, songId, formData);
             setRefreshKeyPlayLists(Date.now());
+            setRefresh(Date.now())
         } catch (error) {
             console.error("Lỗi khi xóa bài hát:", error);
         }

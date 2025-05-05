@@ -1,15 +1,11 @@
 import axiosCustom from "../utils/axiosCustom";
 
-export const addSongToPlaylistService = async (playlistId, songId) => {
-    const formData = {
-        playlist_id: playlistId,
-        song_id: songId,
-    };
+export const addSongToPlaylistService = async (formData) => {    
     return await axiosCustom.post("/song_playlist/create/", formData);
 };
 
-export const getSongsFromPlaylistService = async (playlistId) => {
-    return await axiosCustom.get(`/song_playlist/${playlistId}/songs/`);
+export const getSongsFromPlaylistService = async (playlistId, formData) => {    
+    return await axiosCustom.get(`/song_playlist/${playlistId}/songs/`, { params: formData });;
 };
 
 export const searchSongsFromPlaylistService = async (playlistId, query) => {

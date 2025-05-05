@@ -3,10 +3,12 @@ import { searchSongs } from "../../../services/SongsService";
 import { getSongsFromPlaylistService, deleteSongFromPlaylistService, addSongToPlaylistService } from "../../../services/SongPlaylistService";
 import { IconChevronRight, IconMusic, IconPlayerPlayFilled, IconList, IconDotsVertical, IconClockHour3, IconSearch, IconX } from "@tabler/icons-react";
 import Song from "./_Song";
-import SearchedArtist from "./_SearchedArtist";
 import SearchedSong from "./_SearchedSong";
 import EditPlaylistForm from "./_EditPlaylistForm";
-import { Icon } from "lucide-react";
+import { usePlayList } from "../../../utils/playlistContext";
+import { IconTrash } from "@tabler/icons-react";
+import { deletePlaylistService } from "../../../services/playlistService";
+import { useAudio } from "../../../utils/audioContext";
 
 const MyLibrary = ({ playlist, setCurrentView }) => {
     const [available, setAvailable] = useState(false);
@@ -15,12 +17,26 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
     const [searchResults, setSearchResults] = useState([]);
     const [referesh, setRefresh] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
+    const { playlists, setPlaylists, refreshKeyPlayLists, setRefreshKeyPlayLists } = usePlayList();
+    const [user, setUser] = useState(null);
+    const {setNewPlaylist} = useAudio();
+
+    useEffect(() => {
+        // Lấy thông tin người dùng từ localStorage khi component mount
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
 
     useEffect(() => {
         const fetchSongs = async () => {
             if (!playlist || !playlist.id) return;
             try {
-                const response = await getSongsFromPlaylistService(playlist.id);
+                const formData = {
+                    token: localStorage.getItem("access_token"),
+                };
+                const response = await getSongsFromPlaylistService(playlist.id, formData);
                 setSongs(response.data.songs);
             } catch (error) {
                 console.error("Error fetching songs:", error);
@@ -45,7 +61,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
     const deleteSong = async (songId) => {
         try {
             await deleteSongFromPlaylistService(playlist.id, songId);
-            setRefresh(Date.now());
+            setRefreshKeyPlayLists(Date.now());
         } catch (error) {
             console.error("Lỗi khi xóa bài hát:", error);
         }
@@ -53,10 +69,16 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
 
     const addSongToPlaylist = async (songId) => {
         try {
-            await addSongToPlaylistService(playlist.id, songId); // Thêm bài hát vào playlist
+            const formData = {
+                playlist_id: playlist.id,
+                song_id: songId,
+                token: localStorage.getItem("access_token"),
+            };
+            await addSongToPlaylistService(formData); // Thêm bài hát vào playlist
             alert("Thêm bài hát vào playlist thành công!");
 
             setRefresh(Date.now()); // Cập nhật lại danh sách bài hát
+            setRefreshKeyPlayLists(Date.now());
         } catch (error) {
             console.error("Error adding song to playlist:", error);
         }
@@ -67,17 +89,36 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
         setSearchQuery("");
     };
 
+    const playSongFromThisList = () => {
+        setNewPlaylist(songs, 0)
+    }
+
+    const handleRemove = async () => {
+        try {
+            const isConfirmed = confirm("Bạn có chắc chắn xóa danh sách này không?");
+            if (isConfirmed) {
+                const formData = {
+                    token: localStorage.getItem("access_token")
+                }
+                await deletePlaylistService(playlist.id, formData);
+
+                alert("Xóa thành công");
+                setRefreshKeyPlayLists(Date.now());
+                setCurrentView("main")
+            }
+        } catch (error) {
+            console.error("Error deleting playlist:", error);
+            alert("Đã xảy ra lỗi khi xóa danh sách");
+        }
+    };
+
     return (
-        <div className="bg-[#131313] text-white h-[88vh] flex-1 mr-2 rounded-lg overflow-y-auto">
+        <div className="bg-[#131313] text-white flex-1 mr-2 rounded-lg overflow-y-auto">
             <div className="flex flex-col">
                 <div className="flex items-end gap-4 p-4 pb-6 bg-gradient-to-b from-[#666666] to-[#595959]">
                     <div className="w-[232px] h-[232px] bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
                         {playlist.image ? (
-                            <img
-                                src={playlist.image}
-                                alt={playlist.title}
-                                className="w-full h-full object-cover"
-                            />
+                            <img src={playlist.image} alt={playlist.title} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full bg-gradient-to-br from-[#333333] to-[#121212] flex items-center justify-center">
                                 <IconMusic stroke={2} className="w-24 h-24 text-gray-400" />
@@ -86,20 +127,24 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
                     </div>
                     <div className="flex flex-col gap-4 cursor-pointer" onClick={() => !playlist.is_liked_song && setIsEditing(true)}>
                         <div>
-                            <p className="text-sm">Playlist</p>
                             <h1 className="text-5xl font-bold mt-2 cursor-pointer">{playlist.title}</h1>
                         </div>
                         <h3 className="text-sm text-gray-400">{playlist.description}</h3>
-                        <div className="flex items-center gap-2">
-                            <img src="/path-to-avatar" alt="User Avatar" className="w-6 h-6 rounded-full" />
-                            <span className="text-sm font-semibold">Huỳnh Ngọc Triều</span>
-                        </div>
+                        {user && (
+                            <div className="flex items-center gap-2">
+                                <img src={user.avatar} alt="User Avatar" className="w-6 h-6 rounded-full" />
+                                <span className="text-sm font-semibold">{user.first_name}</span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex flex-1 justify-end">
+                        <IconTrash stroke={2} className="cursor-pointer" onClick={handleRemove} />
                     </div>
                 </div>
                 <div className="flex flex-row justify-between items-center mx-6">
                     <div className="flex flex-row items-center">
                         {songs.length > 0 ? (
-                            <div className="mr-4 bg-green-500 cursor-pointer rounded-full group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400">
+                            <div onClick={playSongFromThisList} className="mr-4 bg-green-500 cursor-pointer rounded-full group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400">
                                 <IconPlayerPlayFilled className="size-12 p-3 text-black" />
                             </div>
                         ) : (

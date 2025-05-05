@@ -14,7 +14,7 @@ import { modals } from "@mantine/modals";
 
 const CreatePlaylistForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ title: "", description: "" });
+  const [formData, setFormData] = useState({ title: "", description: "", token: localStorage.getItem("access_token") });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {

@@ -251,7 +251,7 @@ export default function ChatSidebar({
           },
           tab: {
             color: "white",
-            "&[data-active]": {
+            "&[dataActive]": {
               color: "#0084ff",
               borderColor: "#0084ff",
             },

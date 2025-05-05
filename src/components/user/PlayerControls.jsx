@@ -1,10 +1,21 @@
-import { useRef, useEffect, useState } from "react";
-import { IconCirclePlus, IconPlayerSkipBackFilled, IconPlayerSkipForwardFilled, IconPlayerPlayFilled, IconPlayerPauseFilled, IconVolume, IconVolume3 } from "@tabler/icons-react";
+import { useRef } from "react";
+import {
+    IconCirclePlus,
+    IconPlayerSkipBackFilled,
+    IconPlayerSkipForwardFilled,
+    IconPlayerPlayFilled,
+    IconPlayerPauseFilled,
+    IconVolume,
+    IconVolume3,
+    IconDownload,
+    IconArticle,
+} from "@tabler/icons-react";
+import { Menu, Button, Anchor } from "@mantine/core";
 import { useAudio } from "../../utils/audioContext";
 import { formatTime } from "../../utils/timeFormat";
 
 const PlayerControls = () => {
-    const { setCurrentSong, currentSong, audio, setAudio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume, currentTime, duration, setPlaybackTime, playNextSong } = useAudio();
+    const { currentSong, audio, setIsPlaying, isPlaying, setIsMute, isMute, volume, setVolume, currentTime, duration, setPlaybackTime, playNextSong, setSongDescriptionAvailable } = useAudio();
     const progressRef = useRef(null);
 
     const togglePlayPause = () => {
@@ -35,6 +46,10 @@ const PlayerControls = () => {
         }
     };
 
+    const handleAvailable = () => {
+        setSongDescriptionAvailable(true)
+    }
+
     return (
         currentSong !== null && (
             <div className="border-t bg-black py-2 items-center border-gray-800 px-4">
@@ -56,7 +71,7 @@ const PlayerControls = () => {
                             <button className="rounded-full p-2" onClick={togglePlayPause}>
                                 {isPlaying ? <IconPlayerPauseFilled className="text-white w-6 h-6" /> : <IconPlayerPlayFilled className="text-white w-6 h-6" />}
                             </button>
-                            <IconPlayerSkipForwardFilled className="text-white size-6 cursor-pointer" onClick={playNextSong}/>
+                            <IconPlayerSkipForwardFilled className="text-white size-6 cursor-pointer" onClick={playNextSong} />
                         </div>
                         <div className="w-full flex items-center gap-2">
                             <span className="text-xs text-gray-400">{formatTime(currentTime)}</span>
@@ -69,6 +84,29 @@ const PlayerControls = () => {
 
                     {/* Volume Control */}
                     <div className="flex items-center gap-2 w-1/4 justify-end">
+                        <IconArticle stroke={2} className="size-6 cursor-pointer text-white" onClick={handleAvailable} />
+                        {/* Download */}
+                        <Menu shadow="md">
+                            <Menu.Target>
+                                <Button variant="transparent" color="gray">
+                                    <IconDownload size={20} />
+                                </Button>
+                            </Menu.Target>
+
+                            <Menu.Dropdown>
+                                <Menu.Item>
+                                    <Anchor href={currentSong.video_download_url} underline="never" size="sm">
+                                        Download video
+                                    </Anchor>
+                                </Menu.Item>
+                                <Menu.Item>
+                                    <Anchor href={currentSong.audio_download_url} underline="never" size="sm">
+                                        Download audio
+                                    </Anchor>
+                                </Menu.Item>
+                            </Menu.Dropdown>
+                        </Menu>
+
                         <div onClick={() => setIsMute(!isMute)}>
                             {isMute ? <IconVolume3 stroke={2} className="w-5 h-5 text-gray-400 cursor-pointer" /> : <IconVolume stroke={2} className="w-5 h-5 text-gray-400 cursor-pointer" />}
                         </div>

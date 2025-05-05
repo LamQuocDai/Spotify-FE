@@ -1,11 +1,11 @@
 import { IconPlus, IconTrashX } from "@tabler/icons-react";
 import { Button, Group, LoadingOverlay, Text, Title } from "@mantine/core";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { modals } from "@mantine/modals";
 import PlaylistTable from "./PlaylistTable";
 import Search from "../../../utils/search";
 import { useEffect, useState } from "react";
-// import { deletePlaylistService, getUserPlaylistService, searchPlaylistsService } from "../../../services/playlistService";
+import { deletePlaylistService, getPlaylistService, searchPlaylistsService } from "../../../services/playlistService";
 
 const Playlist = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,13 +19,16 @@ const Playlist = () => {
   const fetchPlaylists = async (pageNum = page, query = searchQuery) => {
     setIsLoading(true);
     try {
+      const formData = {
+        token: localStorage.getItem("access_token")
+      };
+      
       const response = query
-        ? await searchPlaylistsService(query, pageNum, size)
-        : await getUserPlaylistService(pageNum, size);
-      console.log(response.data.playlists);
+        ? await searchPlaylistsService(query, pageNum, size, formData)
+        : await getPlaylistService(pageNum, size, formData);
 
       setPlaylists(response.data.playlists);
-      setTotalPages(Math.ceil(response.data.playlists.length / size));
+      setTotalPages(Math.ceil(response.data.total_playlists / size));
     } catch (e) {
       console.error("Error fetching playlists: ", e);
     } finally {
@@ -54,7 +57,11 @@ const Playlist = () => {
       onConfirm: async () => {
         setIsLoading(true);
         try {
-          await deletePlaylistService(playlistId);
+          const formData = {
+            token: localStorage.getItem("access_token")
+          }
+
+          await deletePlaylistService(playlistId, formData);
           fetchPlaylists();
         } catch (error) {
           console.error("Error deleting playlist:", error);

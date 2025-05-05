@@ -21,9 +21,9 @@ export const getPlaylistService = async () => {
 };
 
 export const getUserPlaylistByIdService = async (id) => {
-  return await axiosCustom.get(`/playlists/user/${id}/`);
+  return await axiosCustom.get(`/playlists/${id}/user`);
 };
 
-export const searchPlaylistsService = async (query, page = 1, size = 10) => {
-  return await axiosCustom.get(`/playlists/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${size}`);
+export const searchPlaylistsService = async (query, page = 1, size = 10, formData) => {    
+  return await axiosCustom.get(`/playlists/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${size}`, { params: formData });
 };

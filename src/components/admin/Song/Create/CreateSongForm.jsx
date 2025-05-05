@@ -31,8 +31,8 @@ const CreateSongForm = () => {
   useEffect(() => {
       const fetchGenres = async () => {
           try {
-              const response = await getAllGenres();
-              setGenres(response.data.map(genre => ({
+              const response = await getAllGenres();                            
+              setGenres(response.data.results.map(genre => ({
                   value: genre.id,
                   label: genre.name
               })));

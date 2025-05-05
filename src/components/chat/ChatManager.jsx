@@ -223,8 +223,8 @@ export default function ChatManager() {
       <Box
         style={{
           position: "fixed",
-          bottom: "20px",
-          right: "20px",
+          bottom: "100px",
+          left: "20px",
           zIndex: 1001,
         }}
       >

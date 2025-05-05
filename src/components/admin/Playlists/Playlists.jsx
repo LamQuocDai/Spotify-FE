@@ -5,7 +5,7 @@ import { modals } from "@mantine/modals";
 import PlaylistTable from "./PlaylistTable";
 import Search from "../../../utils/search";
 import { useEffect, useState } from "react";
-// import { deletePlaylistService, getUserPlaylistService, searchPlaylistsService } from "../../../services/playlistService";
+import { deletePlaylistService, getPlaylistService, searchPlaylistsService } from "../../../services/playlistService";
 
 const Playlist = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,7 +21,7 @@ const Playlist = () => {
     try {
       const response = query
         ? await searchPlaylistsService(query, pageNum, size)
-        : await getUserPlaylistService(pageNum, size);
+        : await getPlaylistService(pageNum, size);
       console.log(response.data.playlists);
 
       setPlaylists(response.data.playlists);

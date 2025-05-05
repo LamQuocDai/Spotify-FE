@@ -9,9 +9,11 @@ const SearchedSong = ({ song, playlist, addSongToPlaylist }) => {
         const fetchSongs = async () => {
             if (!playlist || !playlist.id) return;
             try {
-                const response = await getSongsFromPlaylistService(playlist.id);
-                console.log(response.data);
+                const formData = {
+                    token: localStorage.getItem("access_token")
+                }
                 
+                const response = await getSongsFromPlaylistService(playlist.id, formData);                
                 setVisible(response.data.songs.some((s) => s.id === song.id));
             } catch (error) {
                 console.error("Error fetching songs:", error);

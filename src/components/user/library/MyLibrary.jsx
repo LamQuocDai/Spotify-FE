@@ -16,7 +16,16 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
     const [searchResults, setSearchResults] = useState([]);
     const [referesh, setRefresh] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const { playlists, setPlaylists, refreshKeyPlayLists,setRefreshKeyPlayLists } = usePlayList();
+    const { playlists, setPlaylists, refreshKeyPlayLists, setRefreshKeyPlayLists } = usePlayList();
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        // Lấy thông tin người dùng từ localStorage khi component mount
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, []);
 
     useEffect(() => {
         const fetchSongs = async () => {
@@ -67,7 +76,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
             alert("Thêm bài hát vào playlist thành công!");
 
             setRefresh(Date.now()); // Cập nhật lại danh sách bài hát
-            setRefreshKeyPlayLists(Date.now())
+            setRefreshKeyPlayLists(Date.now());
         } catch (error) {
             console.error("Error adding song to playlist:", error);
         }
@@ -97,10 +106,12 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
                             <h1 className="text-5xl font-bold mt-2 cursor-pointer">{playlist.title}</h1>
                         </div>
                         <h3 className="text-sm text-gray-400">{playlist.description}</h3>
-                        <div className="flex items-center gap-2">
-                            <img src="/path-to-avatar" alt="User Avatar" className="w-6 h-6 rounded-full" />
-                            <span className="text-sm font-semibold">Huỳnh Ngọc Triều</span>
-                        </div>
+                        {user && (
+                            <div className="flex items-center gap-2">
+                                <img src={user.avatar} alt="User Avatar" className="w-6 h-6 rounded-full" />
+                                <span className="text-sm font-semibold">{user.first_name}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="flex flex-row justify-between items-center mx-6">

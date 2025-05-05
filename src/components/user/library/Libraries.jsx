@@ -33,7 +33,7 @@ const Library = ({ setCurrentView, playlist }) => {
 };
 const Libraries = ({ setCurrentView, currentView }) => {
   const [loading, setLoading] = useState(false);
-  const [playlists1, setPlaylists1] = useState([]);
+  const [currentPlayList, setCurrentPlayList] = useState([]);
   const [widthContainer, setWidthContainer] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
@@ -54,7 +54,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
       try {
         if (user) {
           const response = await getUserPlaylistByIdService(user.id);
-          setPlaylists1(response.data.playlists.reverse());
+          setCurrentPlayList(response.data.playlists.reverse());
           setPlaylists(response.data.playlists.reverse());
         }
       } catch (error) {
@@ -77,10 +77,10 @@ const Libraries = ({ setCurrentView, currentView }) => {
           const formData = {
             token: localStorage.getItem("access_token"),
           };
-          const response = await searchPlaylistsService(searchValue, 1, playlists1.length, formData);
+          const response = await searchPlaylistsService(searchValue, 1, currentPlayList.length, formData);
           console.log(response.data.playlists.reverse());
           
-          setPlaylists(response.data.playlists.reverse());
+          setCurrentPlayList(response.data.playlists.reverse());
         } catch (error) {
           console.error("Error fetching search results:", error);
         }
@@ -89,7 +89,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
           const response = await getUserPlaylistByIdService(user.id);
           console.log(response.data);
 
-          setPlaylists(response.data.playlists.reverse());
+          setCurrentPlayList(response.data.playlists.reverse());
         }
       }
     };
@@ -108,7 +108,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
     try {
       const response = await createPlaylistService(formData);
       setPlaylists([
-        ...playlists1,
+        ...currentPlayList,
         {
           id: response.data.id,
           title: response.data.title,
@@ -152,7 +152,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
         )}
       </div>
       <div className="h-[calc(100vh-410px)] overflow-y-auto space-y-4 pr-1 hover:scrollbar-thin hover:scrollbar-thumb-gray-600 hover:scrollbar-track-transparent scrollbar-none">
-        {playlists1.length == 0 ? (
+        {currentPlayList.length == 0 ? (
           <>
             <div className="bg-[#272727] h-36 w-full p-5 rounded-lg">
               <h3 className="font-bold">Tạo danh sách phát đầu tiên của bạn</h3>
@@ -166,7 +166,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
             </div>
           </>
         ) : (
-          playlists1.map((playlist) => <Library key={playlist.id} playlist={playlist} setCurrentView={setCurrentView} />)
+          currentPlayList.map((playlist) => <Library key={playlist.id} playlist={playlist} setCurrentView={setCurrentView} />)
         )}
       </div>
       <div className="flex flex-col px-4">

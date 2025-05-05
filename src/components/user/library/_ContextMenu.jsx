@@ -46,7 +46,7 @@ const ContextMenu = ({ x, y, deleteSong, song, onClose }) => {
     return (
         <div className="context-menu absolute bg-[#242424] rounded-md shadow-lg border border-gray-700 z-50" style={{ top: y, left: x, minWidth: "150px" }} onClick={(e) => e.stopPropagation()}>
             <button className="block w-full text-left px-4 py-2 text-white hover:bg-white/10" onClick={addSongLikedSong}>
-                Thêm vào danh sách yêu thích
+                Thêm vào Liked Songs
             </button>
             <div className="relative" onMouseEnter={() => setShowPlaylists(true)} onMouseLeave={() => setShowPlaylists(false)}>
                 <button className="block w-full text-left px-4 py-2 text-white hover:bg-white/10">Thêm vào danh sách phát</button>

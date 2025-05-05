@@ -51,6 +51,18 @@ export const AudioProvider = ({ children }) => {
     setCurrentSong(playlist[nextIndex]);
   };
 
+  const playBackSong = () => {
+    if (playlist.length === 0) return;
+
+    let nextIndex = currentSongIndex -1;
+    if (nextIndex < 0) {
+      nextIndex = playlist.length - 1; // Quay lại bài đầu tiên nếu hết danh sách
+    }
+
+    setCurrentSongIndex(nextIndex);
+    setCurrentSong(playlist[nextIndex]);
+  };
+
   // Hàm để thêm danh sách bài hát
   const setNewPlaylist = (newPlaylist, startIndex = 0) => {
     setSongDescriptionAvailable(true)
@@ -139,7 +151,8 @@ export const AudioProvider = ({ children }) => {
         currentSongIndex,
         playNextSong,
         songDescriptionAvailable,
-        setSongDescriptionAvailable
+        setSongDescriptionAvailable,
+        playBackSong
       }}
     >
       {children}

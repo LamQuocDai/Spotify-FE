@@ -52,6 +52,11 @@ const Song = ({ song, playlist, deleteSong, songs, index }) => {
         }
     }, [song.url_video]);
 
+    const handleDelete = () => {
+        deleteSong(song.id); 
+        handleCloseContextMenu();
+    };
+
     return (
         <div className="grid grid-cols-[16px_4fr_2fr_1fr] gap-4 items-center hover:bg-white/10 rounded-md p-2 group mt-4 cursor-pointer" onContextMenu={handleContextMenu} onClick={onPlaySong}>
             <div className="text-gray-400">{index + 1}</div>
@@ -65,8 +70,15 @@ const Song = ({ song, playlist, deleteSong, songs, index }) => {
             <div className="text-gray-400">{song.song_name}</div>
             <div className="text-gray-400 text-right">{formatTime(duration)}</div>
 
-            {/* Hiển thị context menu nếu có */}
-            {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} deleteSong={deleteSong} song={song} onClose={handleCloseContextMenu} />}
+            {contextMenu && (
+                <ContextMenu
+                    x={contextMenu.x}
+                    y={contextMenu.y}
+                    deleteSong={handleDelete}
+                    song={song}
+                    onClose={handleCloseContextMenu}
+                />
+            )}
             <video ref={videoRef} src={song.url_video} style={{ display: "none" }} />
         </div>
     );

@@ -12,8 +12,8 @@ export const searchSongsFromPlaylistService = async (playlistId, query) => {
     return await axiosCustom.get(`/song_playlist/${playlistId}/songs/search/?query=${query}`);
 };
 
-export const deleteSongFromPlaylistService = async (playlistId, songId) => {
-    return await axiosCustom.delete(`/song_playlist/${playlistId}/songs/${songId}/delete/`);
+export const deleteSongFromPlaylistService = async (playlistId, songId, formData) => {
+    return await axiosCustom.delete(`/song_playlist/${playlistId}/songs/${songId}/delete/`, { params: formData });
 };
 
 export const viewCreditsService = async (songId) => {
@@ -25,10 +25,7 @@ export const goToArtistService = async (userId) => {
 };
 
 // LikedSong-related services
-export const addToLikedSongsService = async (songId) => {
-    const formData = {
-        song_id: songId,
-    };
+export const addToLikedSongsService = async (formData) => {
     return await axiosCustom.post("/song_playlist/liked_songs/add/", formData);
 };
 

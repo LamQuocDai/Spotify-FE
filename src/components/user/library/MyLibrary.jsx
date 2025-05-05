@@ -60,8 +60,12 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
 
     const deleteSong = async (songId) => {
         try {
-            await deleteSongFromPlaylistService(playlist.id, songId);
+            const formData = {
+                token: localStorage.getItem("access_token")
+            }            
+            await deleteSongFromPlaylistService(playlist.id, songId, formData);
             setRefreshKeyPlayLists(Date.now());
+            setRefresh(Date.now())
         } catch (error) {
             console.error("Lỗi khi xóa bài hát:", error);
         }

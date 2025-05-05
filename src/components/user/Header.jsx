@@ -31,7 +31,11 @@ const Header = ({ setCurrentView, setListSongsDetail }) => {
     const handleSearchChange = async () => {
         try {
             const response = await searchSongs(searchText);
-            setListSongsDetail(response.data.results)
+            const data = {
+              songs: response.data.results,
+              title: "Tìm kiếm: "+ searchText
+            }
+            setListSongsDetail(data)
             setCurrentView("listSongs")
         } catch (error) {
             console.error("Error fetching songs:", error);

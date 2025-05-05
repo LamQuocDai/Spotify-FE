@@ -49,8 +49,12 @@ const MainContent = ({ setCurrentView, setListSongsDetail }) => {
     fetchAllSongs();
   }, []);
 
-  const handleAllSongs = (songs) => {
-    setListSongsDetail(songs);
+  const handleAllSongs = (songs, title) => {
+    const data = {
+      songs: songs,
+      title: title
+    }
+    setListSongsDetail(data);
     setCurrentView("listSongs");
   };
 
@@ -63,7 +67,7 @@ const MainContent = ({ setCurrentView, setListSongsDetail }) => {
           </h2>
           <span
             className="text-sm font-bold text-gray-400 cursor-pointer hover:underline"
-            onClick={() => handleAllSongs(allSongs)}
+            onClick={() => handleAllSongs(allSongs, "Tất cả bài hát")}
           >
             Hiện tất cả
           </span>
@@ -90,7 +94,7 @@ const MainContent = ({ setCurrentView, setListSongsDetail }) => {
               </h2>
               <span
                 className="text-sm font-bold text-gray-400 cursor-pointer hover:underline"
-                onClick={() => handleAllSongs(genre.songs)}
+                onClick={() => handleAllSongs(genre.songs, genre.name)}
               >
                 Hiện tất cả
               </span>

@@ -4,7 +4,7 @@ import { useAudio } from "../../utils/audioContext.jsx";
 
 const ListSongs = ({ listSongs }) => {
     const [contextMenu, setContextMenu] = useState(null);
-    const { currentSong } = useAudio();
+    const { currentSong, songDescriptionAvailable } = useAudio();
 
 
     // Close context menu
@@ -34,10 +34,11 @@ const ListSongs = ({ listSongs }) => {
     }, [contextMenu]);
 
     return (
-        <div className="bg-[#131313] text-white h-[88vh] flex-1 mr-2 rounded-lg overflow-y-auto">
-            <div className={currentSong ? "grid grid-cols-4 gap-4 p-4" : "grid grid-cols-6 gap-4 p-4"}>
-                {listSongs.length > 0 &&
-                    listSongs.map((song, index) => (
+        <div className="bg-[#131313] text-white flex-1 mr-2 rounded-lg overflow-y-auto">
+            <h3 className="p-3 font-bold text-2xl">{listSongs.title}</h3>
+            <div className={songDescriptionAvailable ? "grid grid-cols-4 gap-4 p-4" : "grid grid-cols-6 gap-4 p-4"}>
+                {listSongs.songs.length > 0 &&
+                    listSongs.songs.map((song, index) => (
                         <Song key={song.id} song={song} contextMenu={contextMenu} setContextMenu={setContextMenu} handleCloseContextMenu={handleCloseContextMenu} list={listSongs} />
                     ))}
             </div>

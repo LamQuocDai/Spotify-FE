@@ -8,6 +8,7 @@ import EditPlaylistForm from "./_EditPlaylistForm";
 import { usePlayList } from "../../../utils/playlistContext";
 import { IconTrash } from "@tabler/icons-react";
 import { deletePlaylistService } from "../../../services/playlistService";
+import { useAudio } from "../../../utils/audioContext";
 
 const MyLibrary = ({ playlist, setCurrentView }) => {
     const [available, setAvailable] = useState(false);
@@ -18,6 +19,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
     const [isEditing, setIsEditing] = useState(false);
     const { playlists, setPlaylists, refreshKeyPlayLists, setRefreshKeyPlayLists } = usePlayList();
     const [user, setUser] = useState(null);
+    const {setNewPlaylist} = useAudio();
 
     useEffect(() => {
         // Lấy thông tin người dùng từ localStorage khi component mount
@@ -87,6 +89,10 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
         setSearchQuery("");
     };
 
+    const playSongFromThisList = () => {
+        setNewPlaylist(songs, 0)
+    }
+
     const handleRemove = async () => {
         try {
             const isConfirmed = confirm("Bạn có chắc chắn xóa danh sách này không?");
@@ -95,7 +101,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
                     token: localStorage.getItem("access_token")
                 }
                 await deletePlaylistService(playlist.id, formData);
-                
+
                 alert("Xóa thành công");
                 setRefreshKeyPlayLists(Date.now());
                 setCurrentView("main")
@@ -138,7 +144,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
                 <div className="flex flex-row justify-between items-center mx-6">
                     <div className="flex flex-row items-center">
                         {songs.length > 0 ? (
-                            <div className="mr-4 bg-green-500 cursor-pointer rounded-full group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400">
+                            <div onClick={playSongFromThisList} className="mr-4 bg-green-500 cursor-pointer rounded-full group-hover:block transition-all duration-300 hover:scale-110 hover:bg-green-400">
                                 <IconPlayerPlayFilled className="size-12 p-3 text-black" />
                             </div>
                         ) : (

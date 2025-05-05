@@ -103,7 +103,7 @@ const SongTable = ({
           <Table highlightOnHover horizontalSpacing="md" verticalSpacing="md">
               <Table.Thead>
                   <Table.Tr>
-                      {/* <Table.Th>
+                     <Table.Th>
                           <Checkbox
                               checked={selectedSongs.length === songs.length && songs.length > 0}
                               onChange={() =>
@@ -112,7 +112,7 @@ const SongTable = ({
                                   )
                               }
                           />
-                      </Table.Th> */}
+                      </Table.Th>
                       <Table.Th>Image</Table.Th>
                       <Table.Th>Song Name</Table.Th>
                       <Table.Th>Singer</Table.Th>

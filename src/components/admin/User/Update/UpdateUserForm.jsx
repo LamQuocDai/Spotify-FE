@@ -42,8 +42,6 @@ const UpdateUserForm = () => {
   ];
 
   useEffect(() => {
-    console.log("userId from useParams:", userId); // Debug log to verify userId
-
     const fetchUser = async () => {
       if (!userId) {
         setFetchError("No user ID provided");

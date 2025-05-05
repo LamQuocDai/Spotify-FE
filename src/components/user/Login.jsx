@@ -42,8 +42,8 @@ const Login = () => {
     if (!password) {
       newErrors.password = "Mật khẩu không được để trống.";
       isValid = false;
-    } else if (password.length < 8) {
-      newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự.";
+    } else if (password.length < 6) {
+      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
       isValid = false;
     }
 
@@ -66,7 +66,7 @@ const Login = () => {
       const res = await login(username, password);
       console.log("Đăng nhập thành công:", res);
 
-      const { access, refresh } = res.data;
+      const { access, refresh, user: userData } = res.data;
 
       // Lưu token
       saveTokens({ access, refresh });
@@ -80,18 +80,27 @@ const Login = () => {
         throw new Error("Token JWT không hợp lệ: thiếu user_id");
       }
 
+      // Xác định vai trò
+      let role;
+      if (username.toLowerCase() === "admin") {
+        role = "admin";
+      } else {
+        const groups = decodedToken.groups || [];
+        role = groups.includes("admin") ? "admin" : "user";
+      }
+
       const user = {
         id: decodedToken.user_id,
-        first_name: decodedToken.first_name || username,
-        role: decodedToken.role || "user",
-        avatar: decodedToken.avatar || "https://via.placeholder.com/30",
-        email: decodedToken.email || "",
+        first_name: userData.first_name || username,
+        role: role,
+        avatar: userData.avatar || "https://via.placeholder.com/30",
+        email: userData.email || "",
       };
 
       setUser(user);
       localStorage.setItem("user", JSON.stringify(user));
 
-      if (decodedToken.role === "admin") {
+      if (role === "admin") {
         navigate("/admin", { replace: true });
       } else {
         navigate("/", { replace: true });
@@ -103,8 +112,9 @@ const Login = () => {
 
       if (err.response?.data) {
         if (
+          err.response.data.detail === "Invalid credentials" ||
           err.response.data.detail ===
-          "No active account found with the given credentials"
+            "No active account found with the given credentials"
         ) {
           newErrors.general = "Tên đăng nhập hoặc mật khẩu không đúng.";
         } else {

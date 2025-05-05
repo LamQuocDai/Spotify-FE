@@ -1,7 +1,11 @@
 import axiosCustom from "../utils/axiosCustom";
 
-export const getUsersService = async () => {
-  return await axiosCustom.get("/users/");
+export const getUsersService = async (page = 1, size = 10) => {
+  return await axiosCustom.get(`/users/?page=${page}&page_size=${size}`);
+};
+
+export const searchUsers = async (query, page = 1, size = 10) => {
+  return await axiosCustom.get(`/users/search/?q=${encodeURIComponent(query)}&page=${page}&page_size=${size}`);
 };
 
 export const getUserService = async (userId) => {

@@ -19,9 +19,9 @@ import {
   import clsx from "clsx";
   
   const mockdata = [
-    { label: "User", icon: IconUser, link: "/admin/users" },
     { label: "Song", icon: IconMusic, link: "/admin/songs" },
     { label: "Genre", icon: IconBrandNeteaseMusic, link: "/admin/genres" },
+    { label: "User", icon: IconUser, link: "/admin/users" },
     { label: "Playlist", icon: IconPlaylist, link: "/admin/playlists" },
   ];
   

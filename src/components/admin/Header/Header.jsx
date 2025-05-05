@@ -5,10 +5,19 @@ import {
   IconBell,
 } from "@tabler/icons-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // 👈 cần import
 import classes from "./Header.module.scss";
 
-const Header = ({ isCollapsed, setIsCollapsed }) => {
+const Header = ({ isCollapsed, setIsCollapsed, setUser }) => {
   const [isNotifiOpen, setIsNotifiOpen] = useState(false);
+  const navigate = useNavigate(); // 👈 dùng để điều hướng
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
     <header className={`h-[60px] px-6 ${classes.header}`}>
@@ -58,7 +67,10 @@ const Header = ({ isCollapsed, setIsCollapsed }) => {
           </Menu>
 
           <Tooltip label="Logout">
-            <UnstyledButton className="size-10 flex justify-center items-center">
+            <UnstyledButton
+              className="size-10 flex justify-center items-center"
+              onClick={handleLogout}
+            >
               <ThemeIcon
                 color="#1db954"
                 variant="white"

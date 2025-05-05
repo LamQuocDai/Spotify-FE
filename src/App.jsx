@@ -37,7 +37,7 @@ function App() {
                 <Route path="admin" element={<Admin />}>
                   <Route path="users" element={<User />} />
                   <Route path="users/create" element={<CreateUserForm />} />
-                  <Route path="users/update" element={<UpdateUserForm />} />
+                  <Route path="users/update/:id" element={<UpdateUserForm />} />
 
                   <Route path="songs" element={<Song />} />
                   <Route path="songs/create" element={<CreateSongForm />} />

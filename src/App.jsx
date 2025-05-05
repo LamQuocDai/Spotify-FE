@@ -23,43 +23,55 @@ import OAuthCallback from "./components/auth/OAuthCallback";
 import AuthProvider from "./context/auth/AuthProvider";
 import { PlayListProvider } from "./utils/playlistContext";
 function App() {
-    return (
-        <PlayListProvider>
-            <MantineProvider>
-                <ModalsProvider>
-                    <Notifications />
-                    <AuthProvider>
-                        <BrowserRouter>
-                            <AudioProvider>
-                                <Routes>
-                                    <Route path="/" element={<HomePage />} />
-                                    <Route path="/login" element={<Login />} />
-                                    <Route path="/signup" element={<SignUp />} />
-                                    <Route path="/auth/callback" element={<OAuthCallback />} />
-                                    <Route path="admin" element={<Admin />}>
-                                        <Route path="users" element={<User />} />
-                                        <Route path="users/create" element={<CreateUserForm />} />
-                                        <Route path="users/update" element={<UpdateUserForm />} />
+  return (
+    <PlayListProvider>
+      <MantineProvider>
+        <ModalsProvider>
+          <Notifications />
+          <AuthProvider>
+            <BrowserRouter>
+              <AudioProvider>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<SignUp />} />
+                  <Route path="/auth/callback" element={<OAuthCallback />} />
+                  <Route path="admin" element={<Admin />}>
+                    <Route path="users" element={<User />} />
+                    <Route path="users/create" element={<CreateUserForm />} />
+                    <Route path="users/update" element={<UpdateUserForm />} />
 
-                                        <Route path="songs" element={<Song />} />
-                                        <Route path="songs/create" element={<CreateSongForm />} />
-                                        <Route path="songs/update/:id" element={<UpdateSongForm />} />
+                    <Route path="songs" element={<Song />} />
+                    <Route path="songs/create" element={<CreateSongForm />} />
+                    <Route
+                      path="songs/update/:id"
+                      element={<UpdateSongForm />}
+                    />
 
-                                        <Route path="genres" element={<Genre />} />
-                                        <Route path="genres/create" element={<CreateGenreForm />} />
-                                        <Route path="genres/update/:id" element={<UpdateGenreForm />} />
+                    <Route path="genres" element={<Genre />} />
+                    <Route path="genres/create" element={<CreateGenreForm />} />
+                    <Route
+                      path="genres/update/:id"
+                      element={<UpdateGenreForm />}
+                    />
 
-                                        <Route path="playlists" element={<Playlist />} />
-                                        <Route path="playlists/create" element={<CreatePlaylistForm />} />
-                                        <Route path="playlists/update/:id" element={<UpdatePlaylistForm />} />
-                                    </Route>
-                                </Routes>
-                            </AudioProvider>
-                        </BrowserRouter>
-                    </AuthProvider>
-                </ModalsProvider>
-            </MantineProvider>
-        </PlayListProvider>
-    );
+                    <Route path="playlists" element={<Playlist />} />
+                    <Route
+                      path="playlists/create"
+                      element={<CreatePlaylistForm />}
+                    />
+                    <Route
+                      path="playlists/update/:id"
+                      element={<UpdatePlaylistForm />}
+                    />
+                  </Route>
+                </Routes>
+              </AudioProvider>
+            </BrowserRouter>
+          </AuthProvider>
+        </ModalsProvider>
+      </MantineProvider>
+    </PlayListProvider>
+  );
 }
 export default App;

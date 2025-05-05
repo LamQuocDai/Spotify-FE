@@ -63,7 +63,6 @@ export class ChatWebSocketService {
       const wsUrl = `${protocol}//${host}/ws/chat/${
         this.otherUserId
       }/?token=${encodeURIComponent(token)}`;
-      console.log("Connecting to WebSocket with token in URL");
 
       // Create a simple WebSocket with no protocols
       this.socket = new WebSocket(wsUrl);
@@ -71,7 +70,6 @@ export class ChatWebSocketService {
       // Set up connection timeout
       const connectionTimeout = setTimeout(() => {
         if (this.socket && this.socket.readyState !== WebSocket.OPEN) {
-          console.log("WebSocket connection timeout");
           if (this.socket) {
             this.socket.close();
             this.socket = null;
@@ -82,7 +80,6 @@ export class ChatWebSocketService {
       // Set up event handlers
       this.socket.onopen = (event) => {
         clearTimeout(connectionTimeout);
-        console.log("WebSocket connection established");
 
         // Mark as authenticated immediately since token is in URL
         this.isAuthenticated = true;
@@ -98,18 +95,15 @@ export class ChatWebSocketService {
 
       this.socket.onmessage = (event) => {
         try {
-          console.log("WebSocket message received:", event.data);
           const data = JSON.parse(event.data);
 
           // Handle different message types
           if (data.type === "authentication_success") {
-            console.log("WebSocket authentication successful");
             this.isAuthenticated = true;
           } else if (data.type === "authentication_error") {
             console.error("WebSocket authentication failed:", data.message);
             this.isAuthenticated = false;
           } else if (data.type === "pong") {
-            console.log("Received pong from server");
           } else if (this.onMessageCallback) {
             this.onMessageCallback(data);
           }
@@ -126,7 +120,6 @@ export class ChatWebSocketService {
         clearTimeout(connectionTimeout);
         this.stopPingInterval();
 
-        console.log("WebSocket connection closed:", event.code, event.reason);
         this.isAuthenticated = false;
 
         if (this.onCloseCallback) {
@@ -184,16 +177,11 @@ export class ChatWebSocketService {
         5000
       );
 
-      console.log(`Attempting to reconnect in ${delay / 1000} seconds...`);
-
       this.reconnectTimeout = setTimeout(() => {
-        console.log(
-          `Reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts}`
-        );
         this.connect();
       }, delay);
     } else {
-      console.log("Maximum reconnection attempts reached.");
+      console.warn("Maximum reconnection attempts reached.");
     }
   }
 
@@ -223,7 +211,6 @@ export class ChatWebSocketService {
     };
 
     try {
-      console.log("Sending WebSocket message:", formattedMessage);
       this.socket.send(JSON.stringify(formattedMessage));
       return true;
     } catch (error) {

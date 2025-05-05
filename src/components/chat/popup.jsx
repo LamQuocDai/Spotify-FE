@@ -66,7 +66,6 @@ export default function ChatPopup({
         try {
           const response = await getMessagesService(otherUserId);
           if (response && response.data) {
-            console.log("Loaded messages:", response.data);
             // Transform messages to our format
             const formattedMessages = response.data.map((msg) => ({
               id: msg.id,
@@ -105,26 +104,27 @@ export default function ChatPopup({
 
     // Connect to the other user's chat
     const otherUserId = chat.userId || chat.otherUserId;
-    console.log(`Attempting to connect to chat with user ID: ${otherUserId}`);
 
     const handleMessage = (data) => {
       // Handle messages received from WebSocket
-      console.log("Received message in popup:", data);
 
       // Check if the message has the expected structure
       if (data.message) {
         // Determine if the message is from current user or the other person
         const isSentByMe = data.sender === userId.toString();
 
-        // Check if this is a message we just sent (to prevent duplication)
-        // We use a combination of sender, content and approximate timestamp to identify duplicates
-        const messageKey = `${data.message}-${Date.now()
-          .toString()
-          .substring(0, 10)}`;
+        // For messages from the current user, check if we've already displayed it
+        if (isSentByMe) {
+          // Check each key in sentMessagesRef that contains this message content
+          const keys = Array.from(sentMessagesRef.current);
+          const isDuplicate = keys.some((key) =>
+            key.startsWith(data.message + "-")
+          );
 
-        if (isSentByMe && sentMessagesRef.current.has(messageKey)) {
-          console.log("Ignoring echo of message we just sent:", data.message);
-          return; // Skip this message as we've already added it locally
+          if (isDuplicate) {
+            console.log("Skipping duplicate message:", data.message);
+            return; // Skip this message as we've already added it locally
+          }
         }
 
         const newMessage = {
@@ -142,28 +142,18 @@ export default function ChatPopup({
         };
 
         setMessages((prevMessages) => [...prevMessages, newMessage]);
-      } else if (data.type === "connection_status") {
-        console.log("Connection status update:", data.status);
-      } else if (data.error) {
-        console.error("WebSocket error message:", data.error);
       }
     };
 
     const handleConnect = () => {
       setIsConnected(true);
-      console.log(`Connected to chat with ${chat.name}`);
     };
 
     const handleClose = (event) => {
       setIsConnected(false);
-      console.log(
-        `Disconnected from chat with ${chat.name}`,
-        event ? `Code: ${event.code}, Reason: ${event.reason}` : ""
-      );
     };
 
     // Initialize WebSocket connection
-    console.log("Initializing WebSocket connection");
     wsRef.current = initChatWebSocket(
       otherUserId,
       handleMessage,
@@ -173,7 +163,6 @@ export default function ChatPopup({
 
     // Clean up on unmount
     return () => {
-      console.log("Cleaning up WebSocket connection");
       if (wsRef.current) {
         wsRef.current.disconnect();
       }
@@ -201,10 +190,6 @@ export default function ChatPopup({
           created_at: new Date().toISOString(),
         };
 
-        console.log(
-          `Attempting to send message: "${inputValue}" to ${chat.name}`
-        );
-
         // Send via WebSocket if connected
         let sent = false;
         if (wsRef.current && isConnected) {
@@ -214,9 +199,6 @@ export default function ChatPopup({
         if (sent) {
           // If message was sent successfully via WebSocket, track it to prevent duplicates
           // when it gets echoed back from the server
-          console.log(
-            "Message sent successfully, tracking to prevent duplication"
-          );
           sentMessagesRef.current.add(messageKey);
 
           // Add a cleanup timeout to remove the tracked message after a while
@@ -225,37 +207,43 @@ export default function ChatPopup({
           }, 5000); // 5 seconds should be enough for server to echo back
 
           // Add message locally for immediate feedback
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            {
-              id: Date.now(),
-              sender: "You",
-              content: inputValue,
-              timestamp: new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              isUser: true,
-            },
-          ]);
+          setMessages((prevMessages) => {
+            console.log(prevMessages);
+            return [
+              ...prevMessages,
+              {
+                id: Date.now(),
+                sender: "You",
+                content: inputValue,
+                timestamp: new Date().toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                isUser: true,
+              },
+            ];
+          });
         } else {
           console.warn(
             "Could not send message via WebSocket, connection may be down"
           );
           // If message failed to send via WebSocket, add it to local state
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            {
-              id: Date.now(),
-              sender: "You",
-              content: inputValue,
-              timestamp: new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              isUser: true,
-            },
-          ]);
+          // setMessages((prevMessages) => {
+          //   console.log(prevMessages);
+          //   return [
+          //     ...prevMessages,
+          //     {
+          //       id: Date.now(),
+          //       sender: "You",
+          //       content: inputValue,
+          //       timestamp: new Date().toLocaleTimeString([], {
+          //         hour: "2-digit",
+          //         minute: "2-digit",
+          //       }),
+          //       isUser: true,
+          //     },
+          //   ];
+          // });
           // Optionally implement a fallback REST API call here
         }
 

@@ -6,7 +6,7 @@ import { usePlayList } from "../../../utils/playlistContext.jsx";
 
 const Library = ({ setCurrentView, playlist }) => {
   return (
-    <div className="flex items-center cursor-pointer bg-gradient-to-br from-[#450af5] to-[#8e8ee5] h-16 w-full rounded-lg px-4">
+    <div className={`flex items-center cursor-pointer h-16 w-full rounded-lg px-4 ${playlist.is_liked_song ? 'bg-gradient-to-br from-[#450af5] to-[#8e8ee5]' : 'bg-gradient-to-br from-[#2c2c2c] to-[#1a1a1a]'}`}>
       <div className="flex items-center gap-4">
         {playlist.is_liked_song ? (
           <div className="flex items-center justify-center bg-[#450af5] p-2 rounded">

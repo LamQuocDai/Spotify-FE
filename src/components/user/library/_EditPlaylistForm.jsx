@@ -26,7 +26,6 @@ const EditPlaylistForm = ({ playlist, onClose, setCurrentView }) => {
                 title: title,
                 description: description,
                 image: image,
-                token: localStorage.getItem("access_token")
             }
             const res = await updatePlaylistService(playlist.id, data);
             setCurrentView(res.data);

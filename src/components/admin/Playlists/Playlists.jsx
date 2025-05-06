@@ -5,7 +5,7 @@ import { modals } from "@mantine/modals";
 import PlaylistTable from "./PlaylistTable";
 import Search from "../../../utils/search";
 import { useEffect, useState } from "react";
-import { deletePlaylistService, getPlaylistService, searchPlaylistsService } from "../../../services/playlistService";
+import { deletePlaylistService, getPlaylistService, searchAllPlaylistsService } from "../../../services/playlistService";
 
 const Playlist = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,14 +18,10 @@ const Playlist = () => {
 
   const fetchPlaylists = async (pageNum = page, query = searchQuery) => {
     setIsLoading(true);
-    try {
-      const formData = {
-        token: localStorage.getItem("access_token")
-      };
-      
+    try {  
       const response = query
-        ? await searchPlaylistsService(query, pageNum, size, formData)
-        : await getPlaylistService(pageNum, size, formData);
+        ? await searchAllPlaylistsService(query, pageNum, size)
+        : await getPlaylistService(pageNum, size);
 
       setPlaylists(response.data.playlists);
       setTotalPages(Math.ceil(response.data.total_playlists / size));
@@ -57,11 +53,7 @@ const Playlist = () => {
       onConfirm: async () => {
         setIsLoading(true);
         try {
-          const formData = {
-            token: localStorage.getItem("access_token")
-          }
-
-          await deletePlaylistService(playlistId, formData);
+          await deletePlaylistService(playlistId);
           fetchPlaylists();
         } catch (error) {
           console.error("Error deleting playlist:", error);

@@ -30,7 +30,6 @@ const ContextMenu = ({ x, y, deleteSong, song, onClose }) => {
         try {
             const formData = {
                 song_id: song.id,
-                token: localStorage.getItem("access_token"),
             };
             await addToLikedSongsService(formData); // Thêm bài hát vào playlist
             setRefreshKeyPlayLists(Date.now()); // Cập nhật lại danh sách bài hát

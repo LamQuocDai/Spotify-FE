@@ -59,11 +59,8 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
     };
 
     const deleteSong = async (songId) => {
-        try {
-            const formData = {
-                token: localStorage.getItem("access_token")
-            }            
-            await deleteSongFromPlaylistService(playlist.id, songId, formData);
+        try {       
+            await deleteSongFromPlaylistService(playlist.id, songId);
             setRefreshKeyPlayLists(Date.now());
             setRefresh(Date.now())
         } catch (error) {
@@ -101,10 +98,7 @@ const MyLibrary = ({ playlist, setCurrentView }) => {
         try {
             const isConfirmed = confirm("Bạn có chắc chắn xóa danh sách này không?");
             if (isConfirmed) {
-                const formData = {
-                    token: localStorage.getItem("access_token")
-                }
-                await deletePlaylistService(playlist.id, formData);
+                await deletePlaylistService(playlist.id);
 
                 alert("Xóa thành công");
                 setRefreshKeyPlayLists(Date.now());

@@ -13,7 +13,7 @@ import { notifications } from "@mantine/notifications";
 
 const UpdatePlaylistForm = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({ title: "", description: "", token: localStorage.getItem("access_token")});
+  const [formData, setFormData] = useState({ title: "", description: ""});
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -22,7 +22,9 @@ const UpdatePlaylistForm = () => {
       setIsLoading(true);
       try {
         const response = await getPlaylistByIdService(id, formData);
-        setFormData({ title: response.data.title, description: response.data.description, token: localStorage.getItem("access_token")});
+        console.log("");
+        
+        setFormData({ title: response.data.title, description: response.data.description});
       } catch (e) {
         console.error("Error fetching playlist: ", e);
         notifications.show({

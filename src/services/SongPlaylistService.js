@@ -4,16 +4,16 @@ export const addSongToPlaylistService = async (formData) => {
     return await axiosCustom.post("/song_playlist/create/", formData);
 };
 
-export const getSongsFromPlaylistService = async (playlistId, formData) => {    
-    return await axiosCustom.get(`/song_playlist/${playlistId}/songs/`, { params: formData });;
+export const getSongsFromPlaylistService = async (playlistId) => {    
+    return await axiosCustom.get(`/song_playlist/${playlistId}/songs/`);;
 };
 
 export const searchSongsFromPlaylistService = async (playlistId, query) => {
     return await axiosCustom.get(`/song_playlist/${playlistId}/songs/search/?query=${query}`);
 };
 
-export const deleteSongFromPlaylistService = async (playlistId, songId, formData) => {
-    return await axiosCustom.delete(`/song_playlist/${playlistId}/songs/${songId}/delete/`, { params: formData });
+export const deleteSongFromPlaylistService = async (playlistId, songId) => {
+    return await axiosCustom.delete(`/song_playlist/${playlistId}/songs/${songId}/delete/`);
 };
 
 export const viewCreditsService = async (songId) => {

@@ -74,10 +74,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
     const fetchSearchResults = async () => {
       if (searchValue) {
         try {
-          const formData = {
-            token: localStorage.getItem("access_token"),
-          };
-          const response = await searchPlaylistsService(searchValue, 1, currentPlayList.length, formData);
+          const response = await searchPlaylistsService(searchValue, 1, currentPlayList.length);
           console.log(response.data.playlists.reverse());
           
           setCurrentPlayList(response.data.playlists.reverse());

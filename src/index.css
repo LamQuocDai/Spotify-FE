@@ -11,3 +11,51 @@
 .hide-native-controls::-webkit-media-controls {
   display: none !important;
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* cuộn dọc */
+  height: 8px; /* cuộn ngang */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1a1a1a; /* Màu nền của track (đen nhạt) */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #333333; /* Màu của thumb (xám đậm) */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a; /* Màu khi hover (xám sáng hơn) */
+}
+
+.custom-scrollbar-x::-webkit-scrollbar {
+  height: 8px; /* cuộn ngang */
+}
+
+.custom-scrollbar-x::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 10px;
+}
+
+.custom-scrollbar-x::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 10px;
+}
+
+.custom-scrollbar-x::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
+
+/* firefox style */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #333333 #1a1a1a; /* thumb color, track color */
+}
+
+.custom-scrollbar-x {
+  scrollbar-width: thin;
+  scrollbar-color: #333333 #1a1a1a;
+}

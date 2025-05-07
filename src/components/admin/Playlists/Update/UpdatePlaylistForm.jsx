@@ -22,7 +22,6 @@ const UpdatePlaylistForm = () => {
       setIsLoading(true);
       try {
         const response = await getPlaylistByIdService(id, formData);
-        console.log("");
         
         setFormData({ title: response.data.title, description: response.data.description});
       } catch (e) {

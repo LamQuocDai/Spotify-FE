@@ -59,7 +59,7 @@ const MainContent = ({ setCurrentView, setListSongsDetail }) => {
   };
 
   return (
-    <div className="bg-[#131313] text-white p-4 mr-2 rounded-lg flex-1 overflow-y-auto space-y-4">
+    <div className="bg-[#131313] text-white p-4 mr-2 rounded-lg flex-1 overflow-y-auto space-y-4 custom-scrollbar">
       <div>
         <div className="flex flex-row justify-between">
           <h2 className="text-2xl font-bold mb-6 cursor-pointer hover:underline">
@@ -72,7 +72,7 @@ const MainContent = ({ setCurrentView, setListSongsDetail }) => {
             Hiện tất cả
           </span>
         </div>
-        <div className="flex flex-row gap-4 overflow-x-auto pb-4 scrollbar-none">
+        <div className="flex flex-row gap-4 overflow-x-auto pb-4 custom-scrollbar-x">
           {allSongs.map((song) => (
             <Song
               key={song.id}
@@ -99,7 +99,7 @@ const MainContent = ({ setCurrentView, setListSongsDetail }) => {
                 Hiện tất cả
               </span>
             </div>
-            <div className="flex flex-row gap-4 overflow-x-auto pb-4 scrollbar-none">
+            <div className="flex flex-row gap-4 overflow-x-auto pb-4 custom-scrollbar-x">
               {genre.songs.map((song) => (
                 <Song
                   key={song.id}

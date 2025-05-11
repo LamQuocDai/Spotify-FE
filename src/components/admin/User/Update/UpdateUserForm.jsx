@@ -140,11 +140,20 @@ const UpdateUserForm = () => {
       userFormData.append("email", formData.email);
       userFormData.append("phone", formData.phone);
       userFormData.append("gender", formData.gender);
+
       if (formData.password) {
         userFormData.append("password", formData.password);
       }
+
+      // Check if formData.image is a File object (new upload) or string (existing URL)
       if (formData.image) {
-        userFormData.append("image", formData.image);
+        if (typeof formData.image === "object") {
+          // This is a new file upload
+          userFormData.append("image_file", formData.image);
+        } else {
+          // This is an existing image URL
+          userFormData.append("image", formData.image);
+        }
       }
 
       await updateUserService(userId, userFormData);

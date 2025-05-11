@@ -163,8 +163,10 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
       if (formData.password) {
         formDataToSend.append("password", formData.password);
       }
+
+      // Use the correct field name for image uploads as expected by the backend
       if (formData.image instanceof File) {
-        formDataToSend.append("image", formData.image);
+        formDataToSend.append("image_file", formData.image);
       }
 
       console.log("FormData to send:", Object.fromEntries(formDataToSend));

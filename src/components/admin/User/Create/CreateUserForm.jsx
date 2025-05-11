@@ -86,14 +86,14 @@ const CreateUserForm = () => {
       const userFormData = new FormData();
       userFormData.append("username", formData.username);
       userFormData.append("email", formData.email);
-      userFormData.append("phone", formData.phone);
+      userFormData.append("phone", formData.phone || "");
       userFormData.append("gender", formData.gender);
       userFormData.append("password", formData.password);
-      if (formData.image) {
-        userFormData.append("image", formData.image.path);
-      }
 
-      console.log("Form data:", userFormData);
+      // Handle image file upload correctly
+      if (formData.image) {
+        userFormData.append("image_file", formData.image);
+      }
 
       await createUserService(userFormData);
       openModal({

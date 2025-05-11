@@ -18,6 +18,7 @@ const SignUp = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   const [errors, setErrors] = useState({
     username: "",
     email: "",
@@ -148,53 +149,40 @@ const SignUp = () => {
         first_name: firstName,
         last_name: lastName,
       };
-      console.log("Sending signup data:", formData);
 
       const res = await registerUser(formData);
-
-      console.log("Signup response:", res);
-
-      // Kiểm tra phản hồi từ server
-      const { access, refresh, user: userData } = res.data || res;
+      const { access, refresh, user: userData } = res.data;
 
       // Lưu token
       saveTokens({ access, refresh });
 
       // Giải mã token
       const decodedToken = jwtDecode(access);
-      console.log("Decoded Token:", decodedToken);
 
       if (!decodedToken.user_id) {
-        console.error("No user_id in JWT token");
-        throw new Error("Invalid JWT: missing user_id");
+        throw new Error("Token JWT không hợp lệ: thiếu user_id");
       }
+
+      // Lấy role từ userData hoặc decodedToken
+      const role = userData.role || decodedToken.role || "user";
 
       // Tạo đối tượng user
       const user = {
-        id: decodedToken.user_id || userData?.id || null,
-        first_name:
-          decodedToken.first_name || userData?.first_name || firstName,
-        role: decodedToken.role || userData?.role || "user",
-        avatar:
-          decodedToken.image ||
-          userData?.image ||
-          "https://via.placeholder.com/30",
-        email: decodedToken.email || userData?.email || email,
+        id: decodedToken.user_id,
+        username: userData.username || username,
+        first_name: userData.first_name || firstName,
+        last_name: userData.last_name || lastName,
+        role: role,
+        avatar: userData.image || "https://via.placeholder.com/30",
+        email: userData.email || email,
       };
 
-      console.log("Saving user to localStorage:", user);
       setUser(user);
       localStorage.setItem("user", JSON.stringify(user));
 
       // Điều hướng dựa trên vai trò
-      if (decodedToken.role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      navigate(role === "admin" ? "/admin" : "/", { replace: true });
     } catch (err) {
-      console.error("SignUp Error:", err.response?.data || err.message);
-
       const newErrors = {
         username: "",
         email: "",
@@ -207,11 +195,9 @@ const SignUp = () => {
         general: "",
       };
 
-      // Xử lý lỗi từ server
       if (err.response?.data) {
         Object.entries(err.response.data).forEach(([key, value]) => {
           const errorMessage = Array.isArray(value) ? value.join(" ") : value;
-          // Ánh xạ first_name và last_name từ server
           const fieldMap = {
             first_name: "firstName",
             last_name: "lastName",
@@ -220,9 +206,7 @@ const SignUp = () => {
           if (errorKey in newErrors) {
             newErrors[errorKey] = errorMessage;
           } else {
-            newErrors.general = newErrors.general
-              ? `${newErrors.general} ${key}: ${errorMessage}`
-              : `${key}: ${errorMessage}`;
+            newErrors.general = errorMessage || "Đăng ký thất bại.";
           }
         });
 
@@ -241,7 +225,15 @@ const SignUp = () => {
   };
 
   const handleGoogleSignUp = () => {
-    if (window.googleSignUpInProgress) return;
+    if (window.googleSignUpInProgress || isGoogleSubmitting) return;
+    if (!GOOGLE_CLIENT_ID) {
+      setErrors((prev) => ({
+        ...prev,
+        general: "Cấu hình Google Client ID không hợp lệ.",
+      }));
+      return;
+    }
+    setIsGoogleSubmitting(true);
     window.googleSignUpInProgress = true;
     const redirectUri = `${window.location.origin}/auth/callback`;
     const scope = "email profile";
@@ -251,6 +243,7 @@ const SignUp = () => {
     window.location.href = url;
     setTimeout(() => {
       window.googleSignUpInProgress = false;
+      setIsGoogleSubmitting(false);
     }, 2000);
   };
 
@@ -278,14 +271,17 @@ const SignUp = () => {
         <div className="space-y-3">
           <button
             onClick={handleGoogleSignUp}
-            className="w-[330px] flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors"
+            disabled={isGoogleSubmitting}
+            className={`w-[330px] flex items-center justify-left gap-2 bg-transparent text-white border border-gray-500 rounded-full py-2 px-8 font-medium hover:border-white transition-colors ${
+              isGoogleSubmitting ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <img
               src="https://cdn.freebiesupply.com/logos/large/2x/google-icon-logo-png-transparent.png"
               alt="Google"
               className="mr-6 w-6 h-6"
             />
-            Đăng ký bằng Google
+            {isGoogleSubmitting ? "Đang xử lý..." : "Đăng ký bằng Google"}
           </button>
         </div>
 
@@ -430,7 +426,7 @@ const SignUp = () => {
               <span className="flex items-center">
                 <svg
                   className="animate-spin h-5 w-5 mr-3 text-black"
-                  viewBox="0 24 24"
+                  viewBox="0 0 24 24"
                 >
                   <circle
                     className="opacity-25"

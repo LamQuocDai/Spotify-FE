@@ -53,7 +53,6 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     setErrors({ username: "", password: "", general: "" });
 
     if (!validateForm()) {
@@ -64,68 +63,49 @@ const Login = () => {
 
     try {
       const res = await login(username, password);
-      console.log("Đăng nhập thành công:", res);
-
       const { access, refresh, user: userData } = res.data;
 
       // Lưu token
       saveTokens({ access, refresh });
 
-      // Giải mã token
+      // Giải mã token để lấy user_id
       const decodedToken = jwtDecode(access);
-      console.log("Token giải mã:", decodedToken);
 
       if (!decodedToken.user_id) {
-        console.error("Không tìm thấy user_id trong token JWT");
         throw new Error("Token JWT không hợp lệ: thiếu user_id");
       }
 
-      // Xác định vai trò
-      let role;
-      if (username.toLowerCase() === "admin") {
-        role = "admin";
-      } else {
-        const groups = decodedToken.groups || [];
-        role = groups.includes("admin") ? "admin" : "user";
-      }
+      // Lấy role từ userData (trả về từ API) hoặc decodedToken
+      const role = userData.role || decodedToken.role || "user";
 
+      // Tạo object user để lưu vào context và localStorage
       const user = {
         id: decodedToken.user_id,
-        username: username,
+        username: userData.username || username,
         first_name: userData.first_name || username,
         last_name: userData.last_name || "",
         role: role,
-        avatar: userData.avatar || "https://via.placeholder.com/30",
+        avatar: userData.image || "https://via.placeholder.com/30",
         email: userData.email || "",
       };
 
       setUser(user);
       localStorage.setItem("user", JSON.stringify(user));
 
-      if (role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      // Điều hướng dựa trên vai trò
+      navigate(role === "admin" ? "/admin" : "/", { replace: true });
     } catch (err) {
-      console.error("Lỗi đăng nhập:", err.response?.data || err.message);
-
       const newErrors = { username: "", password: "", general: "" };
 
-      if (err.response?.data) {
-        if (
+      if (err.response?.data?.detail) {
+        newErrors.general =
           err.response.data.detail === "Invalid credentials" ||
           err.response.data.detail ===
             "No active account found with the given credentials"
-        ) {
-          newErrors.general = "Tên đăng nhập hoặc mật khẩu không đúng.";
-        } else {
-          newErrors.general =
-            err.response.data.detail || "Đăng nhập thất bại. Vui lòng thử lại.";
-        }
+            ? "Tên đăng nhập hoặc mật khẩu không đúng."
+            : err.response.data.detail;
       } else {
-        newErrors.general =
-          err.message || "Đăng nhập thất bại. Vui lòng thử lại.";
+        newErrors.general = err.message || "Đăng nhập thất bại. Vui lòng thử lại.";
       }
 
       setErrors(newErrors);

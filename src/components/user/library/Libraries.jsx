@@ -84,8 +84,6 @@ const Libraries = ({ setCurrentView, currentView }) => {
       } else {
         if (user) {
           const response = await getUserPlaylistByIdService(user.id);
-          console.log(response.data);
-
           setCurrentPlayList(response.data.playlists.reverse());
         }
       }
@@ -94,6 +92,10 @@ const Libraries = ({ setCurrentView, currentView }) => {
   }, [searchValue]);
 
   const handleCreatePlaylist = async () => {
+    if (!user) {
+      alert("Vui lòng đăng nhập để tạo danh sách phát");
+      return;
+    }
     setLoading(true);
 
     const formData = {
@@ -154,13 +156,9 @@ const Libraries = ({ setCurrentView, currentView }) => {
             <div className="bg-[#272727] h-36 w-full p-5 rounded-lg">
               <h3 className="font-bold">Tạo danh sách phát đầu tiên của bạn</h3>
               <h3 className="text-sm font-semibold">Rất dễ! chúng tôi sẽ giúp bạn</h3>
-              <button className="mt-4 text-sm font-bold bg-white text-black rounded-full py-1.5 px-4">Tạo danh sách phát</button>
+              <button className="mt-4 text-sm font-bold bg-white text-black rounded-full py-1.5 px-4" onClick={() => handleCreatePlaylist()}>Tạo danh sách phát</button>
             </div>
-            <div className="bg-[#272727] h-36 w-full p-5 rounded-lg">
-              <h3 className="font-bold">Hãy cùng tìm và theo dõi một số podcast</h3>
-              <h3 className="text-sm font-semibold">Chúng tôi sẽ cập nhật cho bạn thông tin về các tập mới</h3>
-              <button className="mt-4 text-sm font-bold bg-white text-black rounded-full py-1.5 px-4">Duyệt xem podcast</button>
-            </div>
+            
           </>
         ) : (
           currentPlayList.map((playlist) => <Library key={playlist.id} playlist={playlist} setCurrentView={setCurrentView} />)

@@ -7,12 +7,9 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
     username: "",
     email: "",
     phone: "",
-    firstName: "",
-    lastName: "",
     gender: "",
     image: null,
-    currentPassword: "",
-    newPassword: "",
+    password: "",
     confirmPassword: "",
   });
 
@@ -22,7 +19,7 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  // Gender options matching the format in UpdateUserForm
+  // Gender options matching backend expectations (numeric values)
   const genderOptions = [
     { value: "1", label: "Nam" },
     { value: "2", label: "Nữ" },
@@ -30,57 +27,57 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
   ];
 
   useEffect(() => {
-    // Initialize form data from user prop immediately to show something
-    if (user) {
+    // Initialize form data only if user exists
+    if (user && typeof user === "object" && user.id) {
       setFormData({
         username: user.username || "",
         email: user.email || "",
         phone: user.phone || "",
-        firstName: user.first_name || "",
-        lastName: user.last_name || "",
-        gender: user.gender ? String(user.gender) : "",
+        gender: user.gender ? String(user.gender) : "", // Convert to string for select
         image: null,
-        currentPassword: "",
-        newPassword: "",
+        password: "",
         confirmPassword: "",
       });
-
       setPreviewImage(user.image || null);
+    } else {
+      setErrors({
+        general: "Không có thông tin người dùng để hiển thị",
+      });
+      setIsLoading(false);
+      return;
     }
 
-    // If we have a user ID, fetch full user data
-    if (user && user.id) {
-      setIsLoading(true);
-      const fetchUserDetails = async () => {
-        try {
-          const response = await getUserService(user.id);
-          const userData = response.data.data;
-
-          // Update form with fetched data
-          setFormData((prevData) => ({
-            ...prevData,
-            username: userData.username || user.username || "",
-            email: userData.email || user.email || "",
-            phone: userData.phone || user.phone || "",
-            firstName: userData.first_name || user.first_name || "",
-            lastName: userData.last_name || user.last_name || "",
-            gender: userData.gender ? String(userData.gender) : "",
-            // Keep password fields empty
-            image: userData.image || user.image || null,
-          }));
-        } catch (error) {
-          console.error("Error fetching user details:", error);
-          setErrors({
-            ...errors,
-            general: "Không thể tải thông tin người dùng",
-          });
-        } finally {
-          setIsLoading(false);
+    // Fetch user details if ID is provided
+    setIsLoading(true);
+    const fetchUserDetails = async () => {
+      try {
+        const response = await getUserService(user.id);
+        console.log("getUserService Response:", response); // Debug response
+        const userData = response.data?.data || response.data; // Handle both structures
+        if (!userData) {
+          throw new Error("Không tìm thấy thông tin người dùng");
         }
-      };
-
-      fetchUserDetails();
-    }
+        setFormData((prevData) => ({
+          ...prevData,
+          username: userData.username || user.username || "",
+          email: userData.email || user.email || "",
+          phone: userData.phone || user.phone || "",
+          gender: userData.gender ? String(userData.gender) : "",
+          image: null,
+          password: "",
+          confirmPassword: "",
+        }));
+        setPreviewImage(userData.image || user.image || null);
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+        setErrors({
+          general: error.message || "Không thể tải thông tin người dùng",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUserDetails();
   }, [user]);
 
   const handleChange = (e) => {
@@ -89,7 +86,6 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
       ...formData,
       [name]: value,
     });
-    // Clear error when field is changed
     if (errors[name]) {
       setErrors({
         ...errors,
@@ -101,14 +97,21 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (!file.type.startsWith("image/")) {
+        setErrors({ ...errors, image: "Vui lòng chọn file ảnh" });
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors({ ...errors, image: "Ảnh không được lớn hơn 5MB" });
+        return;
+      }
+      setFormData({
+        ...formData,
+        image: file,
+      });
       const reader = new FileReader();
       reader.onload = () => {
-        const imageUrl = reader.result;
-        setPreviewImage(imageUrl);
-        setFormData({
-          ...formData,
-          image: imageUrl, // Store the image URL string instead of the file object
-        });
+        setPreviewImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -117,24 +120,19 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "Tên không được để trống";
+    if (!formData.username.trim()) {
+      newErrors.username = "Tên người dùng không được để trống";
     }
 
     if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) {
       newErrors.email = "Email không hợp lệ";
     }
 
-    if (formData.newPassword) {
-      if (!formData.currentPassword) {
-        newErrors.currentPassword = "Cần nhập mật khẩu hiện tại";
+    if (formData.password) {
+      if (formData.password.length < 6) {
+        newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
       }
-
-      if (formData.newPassword.length < 6) {
-        newErrors.newPassword = "Mật khẩu phải có ít nhất 6 ký tự";
-      }
-
-      if (formData.newPassword !== formData.confirmPassword) {
+      if (formData.password !== formData.confirmPassword) {
         newErrors.confirmPassword = "Mật khẩu không khớp";
       }
     }
@@ -159,96 +157,79 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
       formDataToSend.append("username", formData.username);
       formDataToSend.append("email", formData.email || "");
       formDataToSend.append("phone", formData.phone || "");
-      formDataToSend.append("gender", formData.gender || "");
-
-      // Only include password fields if the user is updating their password
-      if (formData.newPassword) {
-        formDataToSend.append("password", formData.newPassword);
+      if (formData.gender) {
+        formDataToSend.append("gender", formData.gender); // Only send if non-empty
       }
-
-      // Send image as URL string instead of file object
-      if (formData.image) {
+      if (formData.password) {
+        formDataToSend.append("password", formData.password);
+      }
+      if (formData.image instanceof File) {
         formDataToSend.append("image", formData.image);
       }
 
-      await updateUserService(user.id, formDataToSend);
+      console.log("FormData to send:", Object.fromEntries(formDataToSend));
+      const response = await updateUserService(user.id, formDataToSend);
+      const updatedUserData = response.data.data || response.data;
 
-      // Update local storage user data
       const updatedUser = {
         ...user,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        gender: formData.gender,
-        phone: formData.phone,
+        username: updatedUserData.username || formData.username,
+        email: updatedUserData.email || formData.email,
+        phone: updatedUserData.phone || formData.phone,
+        gender: updatedUserData.gender || formData.gender || null,
+        image:
+          updatedUserData.image || (formData.image ? previewImage : user.image),
       };
-
-      // Update the image in localStorage with the image string URL
-      if (formData.image) {
-        updatedUser.image = formData.image;
-      }
-
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
-      // Notify parent component of the update
       if (onUpdate) {
         onUpdate(updatedUser);
       }
 
-      // Reset password fields
+      setSuccessMessage("Cập nhật thông tin thành công!");
       setFormData({
         ...formData,
-        currentPassword: "",
-        newPassword: "",
+        password: "",
         confirmPassword: "",
         image: null,
       });
+      setPreviewImage(updatedUserData.image || previewImage);
 
-      // Close popup after 2 seconds
       setTimeout(() => {
         onClose();
       }, 2000);
     } catch (error) {
       console.error("Error updating user profile:", error);
-      if (error.response?.data?.detail) {
-        // Handle API error messages
-        if (
-          typeof error.response.data.detail === "string" &&
-          error.response.data.detail.includes("password")
-        ) {
-          setErrors({
-            ...errors,
-            currentPassword: "Mật khẩu hiện tại không chính xác",
-          });
-        } else if (typeof error.response.data.detail === "object") {
-          // Handle object-style error response
-          const apiErrors = {};
-          Object.keys(error.response.data.detail).forEach((key) => {
-            const errorMsg = Array.isArray(error.response.data.detail[key])
-              ? error.response.data.detail[key][0]
-              : error.response.data.detail[key];
-            apiErrors[key] = errorMsg;
-          });
-          setErrors({
-            ...errors,
-            ...apiErrors,
-            general: "Vui lòng kiểm tra lại thông tin",
-          });
-        } else {
-          setErrors({
-            ...errors,
-            general: error.response.data.detail || "Có lỗi xảy ra khi cập nhật",
-          });
-        }
-      } else {
-        setErrors({
-          ...errors,
-          general: "Có lỗi xảy ra khi cập nhật thông tin",
-        });
-      }
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Có lỗi xảy ra khi cập nhật";
+      setErrors({
+        general:
+          typeof errorMessage === "string"
+            ? errorMessage
+            : "Vui lòng kiểm tra lại thông tin",
+        ...(typeof errorMessage === "object" ? errorMessage : {}),
+      });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const onCloseWithReset = () => {
+    setFormData({
+      username: "",
+      email: "",
+      phone: "",
+      gender: "",
+      image: null,
+      password: "",
+      confirmPassword: "",
+    });
+    setPreviewImage(null);
+    setErrors({});
+    setSuccessMessage("");
+    onClose();
   };
 
   return (
@@ -257,7 +238,7 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Thông tin cá nhân</h2>
           <button
-            onClick={onClose}
+            onClick={onCloseWithReset}
             className="p-1 hover:bg-[#3e3e3e] rounded-full"
           >
             <IconX size={18} />
@@ -283,7 +264,6 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Avatar Upload */}
             <div className="flex flex-col items-center mb-4">
               <div
                 className="w-24 h-24 rounded-full mb-2 overflow-hidden bg-[#3e3e3e] flex items-center justify-center"
@@ -308,22 +288,24 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
                   onChange={handleImageChange}
                 />
               </label>
+              {errors.image && (
+                <p className="text-red-500 text-xs mt-1">{errors.image}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm mb-1">Tên</label>
+              <label className="block text-sm mb-1">Tên người dùng</label>
               <input
                 type="text"
-                name="firstName"
-                disabled={true}
-                value={formData.firstName}
+                name="username"
+                value={formData.username}
                 onChange={handleChange}
                 className={`w-full p-2 bg-[#3e3e3e] rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 ${
-                  errors.firstName ? "border border-red-500" : ""
+                  errors.username ? "border border-red-500" : ""
                 }`}
               />
-              {errors.firstName && (
-                <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>
+              {errors.username && (
+                <p className="text-red-500 text-xs mt-1">{errors.username}</p>
               )}
             </div>
 
@@ -375,38 +357,18 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
               <h3 className="font-medium mb-4">Đổi mật khẩu</h3>
 
               <div className="mb-3">
-                <label className="block text-sm mb-1">Mật khẩu hiện tại</label>
-                <input
-                  type="password"
-                  name="currentPassword"
-                  value={formData.currentPassword}
-                  onChange={handleChange}
-                  className={`w-full p-2 bg-[#3e3e3e] rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 ${
-                    errors.currentPassword ? "border border-red-500" : ""
-                  }`}
-                />
-                {errors.currentPassword && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.currentPassword}
-                  </p>
-                )}
-              </div>
-
-              <div className="mb-3">
                 <label className="block text-sm mb-1">Mật khẩu mới</label>
                 <input
                   type="password"
-                  name="newPassword"
-                  value={formData.newPassword}
+                  name="password"
+                  value={formData.password}
                   onChange={handleChange}
                   className={`w-full p-2 bg-[#3e3e3e] rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 ${
-                    errors.newPassword ? "border border-red-500" : ""
+                    errors.password ? "border border-red-500" : ""
                   }`}
                 />
-                {errors.newPassword && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.newPassword}
-                  </p>
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
                 )}
               </div>
 
@@ -434,7 +396,7 @@ const ProfilePopup = ({ user, onClose, onUpdate }) => {
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={onCloseWithReset}
                 className="bg-transparent hover:bg-[#3e3e3e] text-white px-4 py-2 rounded-full mr-3"
               >
                 Hủy

@@ -91,7 +91,9 @@ const Login = () => {
 
       const user = {
         id: decodedToken.user_id,
+        username: username,
         first_name: userData.first_name || username,
+        last_name: userData.last_name || "",
         role: role,
         avatar: userData.avatar || "https://via.placeholder.com/30",
         email: userData.email || "",

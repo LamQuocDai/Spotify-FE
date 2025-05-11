@@ -13,6 +13,7 @@ import { useState } from "react";
 import { deleteUserService } from "../../../services/UserService";
 import { modals } from "@mantine/modals";
 import clsx from "clsx";
+import { notifications } from "@mantine/notifications";
 
 const UserTable = ({
   users,
@@ -25,12 +26,16 @@ const UserTable = ({
 }) => {
   const [loadingDelete, setLoadingDelete] = useState(false);
 
-  const openDeleteModal = (id) =>
+  console.log("Users in UserTable:", users); // For debugging
+
+  const openDeleteModal = (id, username) =>
     modals.openConfirmModal({
       title: <Text size="xl">Delete user</Text>,
       children: (
         <>
-          <Text size="md">Are you sure you want to delete this user?</Text>
+          <Text size="md">
+            Are you sure you want to delete user "{username}"?
+          </Text>
           <Text mt="sm" c="yellow" fs="italic" size="sm">
             This action is irreversible.
           </Text>
@@ -42,9 +47,19 @@ const UserTable = ({
         setLoadingDelete(true);
         try {
           await deleteUserService(id);
-          fetchUsers(page); // gọi lại trang hiện tại sau khi xóa
+          fetchUsers(page);
+          notifications.show({
+            title: "Success",
+            message: "User deleted successfully",
+            color: "green",
+          });
         } catch (error) {
           console.error("Error deleting user:", error);
+          notifications.show({
+            title: "Error",
+            message: error.message || "Failed to delete user",
+            color: "red",
+          });
         } finally {
           setLoadingDelete(false);
         }
@@ -63,21 +78,20 @@ const UserTable = ({
         <Checkbox
           checked={selectedUsers.includes(user.id)}
           onChange={() => handleSelect(user.id)}
+          aria-label={`Select user ${user.username}`}
         />
       </Table.Td>
       <Table.Td>
-        {user.image ? (
-          <Avatar size="sm" src={user.image} alt="User Image" />
-        ) : (
-          <Avatar size="sm" />
-        )}
+        <Avatar
+          size="sm"
+          src={user.image}
+          alt={`Profile image of ${user.username}`}
+        />
       </Table.Td>
       <Table.Td>{user.username}</Table.Td>
-      <Table.Td>{user.first_name}</Table.Td>
-      <Table.Td>{user.last_name}</Table.Td>
       <Table.Td>{user.email}</Table.Td>
-      <Table.Td>{user.phone}</Table.Td>
-      <Table.Td>{user.genre}</Table.Td>
+      <Table.Td>{user.phone || "-"}</Table.Td>
+      <Table.Td>{user.gender || "-"}</Table.Td>
       <Table.Td>
         <span
           className={clsx(
@@ -89,13 +103,18 @@ const UserTable = ({
             }
           )}
         >
-          {user.status}
+          {user.status || "unknown"}
         </span>
       </Table.Td>
       <Table.Td>
         <Group gap={6}>
           <Link to={`/admin/users/update/${user.id}`}>
-            <ActionIcon variant="transparent" color="yellow" radius="xl">
+            <ActionIcon
+              variant="transparent"
+              color="yellow"
+              radius="xl"
+              aria-label={`Edit user ${user.username}`}
+            >
               <IconEdit style={{ width: "70%", height: "70%" }} stroke={1.5} />
             </ActionIcon>
           </Link>
@@ -103,7 +122,8 @@ const UserTable = ({
             variant="transparent"
             color="red"
             radius="xl"
-            onClick={() => openDeleteModal(user.id)}
+            onClick={() => openDeleteModal(user.id, user.username)}
+            aria-label={`Delete user ${user.username}`}
           >
             <IconTrash style={{ width: "70%", height: "70%" }} stroke={1.5} />
           </ActionIcon>
@@ -129,20 +149,31 @@ const UserTable = ({
                       : users.map((u) => u.id)
                   )
                 }
+                aria-label="Select all users"
               />
             </Table.Th>
-            <Table.Th />
+            <Table.Th>Image</Table.Th>
             <Table.Th>Username</Table.Th>
-            <Table.Th>First Name</Table.Th>
-            <Table.Th>Last Name</Table.Th>
             <Table.Th>Email</Table.Th>
             <Table.Th>Phone</Table.Th>
-            <Table.Th>Genre</Table.Th>
+            <Table.Th>Gender</Table.Th>
             <Table.Th>Status</Table.Th>
             <Table.Th>Actions</Table.Th>
           </Table.Tr>
         </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
+        <Table.Tbody>
+          {users.length > 0 ? (
+            rows
+          ) : (
+            <Table.Tr>
+              <Table.Td colSpan={8}>
+                <Text align="center" c="dimmed">
+                  No users found
+                </Text>
+              </Table.Td>
+            </Table.Tr>
+          )}
+        </Table.Tbody>
       </Table>
 
       {totalPages > 1 && (
@@ -154,7 +185,7 @@ const UserTable = ({
           }}
           total={totalPages}
           mt="md"
-          position="right"
+          withEdges
         />
       )}
     </>

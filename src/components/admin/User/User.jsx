@@ -1,11 +1,16 @@
 import { IconPlus, IconTrashX } from "@tabler/icons-react";
 import { Button, Group, LoadingOverlay, Text, Title } from "@mantine/core";
 import { Link } from "react-router-dom";
-import { modals } from "@mantine/modals";
+import { modals } from "@mantine/modals"; // Add missing import
 import { useState, useEffect } from "react";
+import { notifications } from "@mantine/notifications";
 import UserTable from "./UserTable";
 import Search from "../Search/Search";
-import { getUsersService, searchUsers, deleteUserService } from "../../../services/UserService";
+import {
+  getUsersService,
+  searchUsers,
+  deleteUserService,
+} from "../../../services/UserService";
 
 const User = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,27 +18,34 @@ const User = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [size] = useState(10);
+  const [pageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchUsers = async (pageNum = page, query = searchQuery) => {
     setIsLoading(true);
     try {
       const response = query.trim()
-        ? await searchUsers(query, pageNum, size)
-        : await getUsersService(pageNum, size);
-      
-      // Handle API response structure: { status, message, data: [...] }
-      const userData = response.data.data || [];
-      setUsers(userData);
-      
-      
-      // Calculate total pages
-      setTotalPages(Math.ceil(userData.length / size) || 1);
+        ? await searchUsers(query, pageNum, pageSize)
+        : await getUsersService(pageNum, pageSize);
+      console.log("API Response:", response);
+      setUsers(response.data.users || []);
+      setTotalPages(response.data.total_pages || 1);
+      if (query.trim() && response.data.users.length === 0) {
+        notifications.show({
+          title: "No Results",
+          message: `No users found for query "${query}"`,
+          color: "yellow",
+        });
+      }
     } catch (error) {
       console.error("Error fetching users:", error);
       setUsers([]);
       setTotalPages(1);
+      notifications.show({
+        title: "Error",
+        message: error.message || "Failed to fetch users",
+        color: "red",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -44,45 +56,14 @@ const User = () => {
   }, [page, searchQuery]);
 
   const handleSearch = (query) => {
+    console.log("Search Query:", query); // Add for debugging
     setSearchQuery(query);
     setPage(1);
   };
 
-  const handleEnter = (query) => {
-    fetchUsers(1, query);
-  };
+  const handleDeleteMultiple = async () => {
+    if (selectedUsers.length === 0) return;
 
-  const handleDeleteUser = (userId) => {
-    openDeleteModal(userId);
-  };
-
-  const openDeleteModal = (userId) =>
-    modals.openConfirmModal({
-      title: <Text size="xl">Delete User</Text>,
-      children: (
-        <>
-          <Text size="md">Are you sure you want to delete this user?</Text>
-          <Text mt="sm" c="yellow" fs="italic" size="sm">
-            This action is irreversible and you will have to contact support to restore your data.
-          </Text>
-        </>
-      ),
-      labels: { confirm: "Delete", cancel: "Cancel" },
-      confirmProps: { color: "red" },
-      onConfirm: async () => {
-        setIsLoading(true);
-        try {
-          await deleteUserService(userId);
-          fetchUsers();
-        } catch (error) {
-          console.error("Error deleting user:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      },
-    });
-
-  const openDeleteModalMultiple = () =>
     modals.openConfirmModal({
       title: <Text size="xl">Delete selected users</Text>,
       children: (
@@ -91,22 +72,36 @@ const User = () => {
             Are you sure you want to delete {selectedUsers.length} user(s)?
           </Text>
           <Text mt="sm" c="yellow" fs="italic" size="sm">
-            This action is irreversible and you will have to contact support to restore your data.
+            This action is irreversible and you will have to contact support to
+            restore your data.
           </Text>
         </>
       ),
       labels: { confirm: "Delete users", cancel: "Cancel" },
-      confirmProps: { color: "red" },
+      confirmProps: { color: "red", loading: isLoading },
       onConfirm: async () => {
+        setIsLoading(true);
         try {
           await Promise.all(selectedUsers.map((id) => deleteUserService(id)));
           setSelectedUsers([]);
-          fetchUsers();
+          await fetchUsers(page);
+          notifications.show({
+            title: "Success",
+            message: "Users deleted successfully",
+            color: "green",
+          });
         } catch (error) {
-          console.error("Error deleting users:", error);
+          notifications.show({
+            title: "Error",
+            message: error.message || "Failed to delete users",
+            color: "red",
+          });
+        } finally {
+          setIsLoading(false);
         }
       },
     });
+  };
 
   return (
     <>
@@ -126,7 +121,6 @@ const User = () => {
             placeholder="Search users"
             value={searchQuery}
             onSearch={handleSearch}
-            onEnter={handleEnter}
           />
           <Group>
             {selectedUsers.length > 0 && (
@@ -134,9 +128,10 @@ const User = () => {
                 variant="light"
                 color="red"
                 radius="md"
-                onClick={openDeleteModalMultiple}
+                onClick={handleDeleteMultiple}
+                leftSection={<IconTrashX width={18} height={18} />}
               >
-                <IconTrashX width={18} height={18} />
+                Delete Selected
               </Button>
             )}
             <Link to="/admin/users/create">
@@ -160,7 +155,6 @@ const User = () => {
           page={page}
           setPage={setPage}
           totalPages={totalPages}
-          handleDeleteUser={handleDeleteUser}
         />
       </div>
     </>

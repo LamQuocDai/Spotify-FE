@@ -3,6 +3,7 @@ import { createPlaylistService, getUserPlaylistByIdService, searchPlaylistsServi
 import { IconPlus, IconWorld, IconArrowRight, IconArrowLeft, IconSearch } from "@tabler/icons-react";
 import { IconMusic } from "@tabler/icons-react";
 import { usePlayList } from "../../../utils/playlistContext.jsx";
+import { now } from "lodash";
 
 const Library = ({ setCurrentView, playlist }) => {
   return (
@@ -36,9 +37,8 @@ const Libraries = ({ setCurrentView, currentView }) => {
   const [currentPlayList, setCurrentPlayList] = useState([]);
   const [widthContainer, setWidthContainer] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-
   const [user, setUser] = useState(null);
-  const { setPlaylists, refreshKeyPlayLists } = usePlayList();
+  const { setPlaylists, refreshKeyPlayLists, setRefreshKeyPlayLists } = usePlayList();
 
   useEffect(() => {
     // Lấy thông tin người dùng từ localStorage khi component mount
@@ -115,6 +115,7 @@ const Libraries = ({ setCurrentView, currentView }) => {
         },
       ]);
       setCurrentView(response.data);
+      setRefreshKeyPlayLists(Date.now());
     } catch (error) {
       console.error("Error in creating playlist:", error);
     } finally {
